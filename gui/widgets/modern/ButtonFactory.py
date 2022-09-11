@@ -3,11 +3,24 @@ from gui.AnalysisConfig import AnalysisConfig
 
 
 class ButtonFactory:
+    """
+    A class allowing the creation of button of different types
+    """
 
     conf = AnalysisConfig.instance
 
     @staticmethod
     def create(parent, image=None, text=None, theme="dark", command=None, font_size=None):
+        """
+        Create a button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param theme: the button's theme, i.e., "dark", "light", "white", "invisible_dark", "blue" or "red"
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         if theme == "dark":
             return ButtonFactory.create_dark_button(parent, image, text, command, font_size)
         if theme == "light":
@@ -23,6 +36,15 @@ class ButtonFactory:
 
     @staticmethod
     def create_blue_button(parent, image, text, command, font_size):
+        """
+        Create a blue button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.TOP
@@ -46,6 +68,15 @@ class ButtonFactory:
 
     @staticmethod
     def create_dark_button(parent, image, text, command, font_size):
+        """
+        Create a dark button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         if font_size is None:
             font_size = 10
 
@@ -65,6 +96,15 @@ class ButtonFactory:
 
     @staticmethod
     def create_invisible_dark_button(parent, image, text, command, font_size):
+        """
+        Create an invisible button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         if font_size is None:
             font_size = 10
 
@@ -84,6 +124,15 @@ class ButtonFactory:
 
     @staticmethod
     def create_red_button(parent, image, text, command, font_size):
+        """
+        Create a red button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         if font_size is None:
             font_size = 14
 
@@ -103,6 +152,15 @@ class ButtonFactory:
 
     @staticmethod
     def create_light_button(parent, image, text, command, font_size):
+        """
+        Create a light gray button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.LEFT
@@ -126,6 +184,15 @@ class ButtonFactory:
 
     @staticmethod
     def create_white_button(parent, image, text, command, font_size):
+        """
+        Create a white button
+        :param parent: the parent widget
+        :param text: the button's text
+        :param image: the button's image
+        :param font_size: the text font size
+        :param command: the button's command
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.LEFT

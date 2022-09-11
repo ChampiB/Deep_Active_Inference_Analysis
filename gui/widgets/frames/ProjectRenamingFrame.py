@@ -7,8 +7,15 @@ from gui.widgets.modern.LabelFactory import LabelFactory
 
 
 class ProjectRenamingFrame(tk.Frame):
+    """
+    A class that allows the user to rename a project
+    """
 
     def __init__(self, parent):
+        """
+        Constructor
+        :param parent: the parent widget
+        """
 
         # Call parent constructor
         super().__init__(parent)
@@ -53,6 +60,9 @@ class ProjectRenamingFrame(tk.Frame):
         self.rename_button.grid(row=2, column=1, columnspan=2, pady=10, padx=(0, 10), ipady=10, sticky="nsew")
 
     def change_project_name(self):
+        """
+        Change the project name
+        """
         # Check that the new project name is not empty
         self.renaming_entry.remove_help_message()
         new_project_name = self.renaming_entry.get()

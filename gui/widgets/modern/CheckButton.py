@@ -5,12 +5,12 @@ from gui.AnalysisConfig import AnalysisConfig
 
 class CheckButton(tk.Checkbutton):
     """
-    A scrollbar is gridded as a sibling of what it's scrolling.
+    A modern checkbutton
     """
 
     def __init__(self, parent, variable, command):
         """
-        Create the
+        Constructor
         :param parent: the parent widget
         :param variable: the checkbutton variable defining its state
         :param command: the callback function to call when the combo-box's value has changed

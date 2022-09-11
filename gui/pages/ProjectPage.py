@@ -9,12 +9,12 @@ from gui.widgets.frames.ProjectTreeFrame import ProjectTreeFrame
 
 class ProjectPage(tk.Frame):
     """
-    The page used for selecting the project to edit
+    The page used to display a project
     """
 
     def __init__(self, parent):
         """
-        Create the project selection page
+        Create the project page
         :param parent: the parent widget, i.e., the analysis window
         """
         # Call parent constructor
@@ -50,7 +50,7 @@ class ProjectPage(tk.Frame):
         self.project_window = tk.PanedWindow(
             self.project_frame, orient="horizontal", borderwidth=0, background=self.conf.colors["dark_gray"]
         )
-        self.project_tree = ProjectTreeFrame(self.project_window, self.conf)
+        self.project_tree = ProjectTreeFrame(self.project_window)
         self.information = tk.Frame(self.project_window, background=self.conf.colors["dark_gray"])
 
         self.project_window.add(self.project_tree, minsize=30)

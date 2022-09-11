@@ -34,6 +34,11 @@ class Scrollbar(tk.Canvas):
         self.x1 = 0
         self.y1 = 0
 
+        self.last_y = 0
+        self.last_x = 0
+        self.y_move_on_click = 0
+        self.x_move_on_click = 0
+
         self.slider_color = self.conf.colors["scrollbar"]
         self.trough_color = self.conf.colors["gray"]
 
@@ -54,6 +59,10 @@ class Scrollbar(tk.Canvas):
         self.bind_wheel(self)
 
     def bind_wheel(self, widget):
+        """
+        Allow scrolling when on top of the widget
+        :param widget: the widget
+        """
         # with Windows OS
         widget.bind("<MouseWheel>", self.scroll_on_wheel)
         # with Linux OS
@@ -62,7 +71,9 @@ class Scrollbar(tk.Canvas):
 
     def set(self, lo, hi):
         """
-        For resizing & repositioning the slider.
+        Resize & reposition the slider
+        :param lo: current position of the slide (top edge of the slider)
+        :param hi: current position of the slide (bottom edge of the slider)
         """
 
         lo = float(lo)
@@ -114,6 +125,10 @@ class Scrollbar(tk.Canvas):
                 self.first_x = event.x
 
     def start_scroll(self, event):
+        """
+        Start the scrolling
+        :param event: the event that triggered the call to this function
+        """
         if self.orient == 'vertical':
             self.last_y = event.y
             self.y_move_on_click = int(event.y - self.coords('slider')[1])
@@ -122,46 +137,57 @@ class Scrollbar(tk.Canvas):
             self.x_move_on_click = int(event.x - self.coords('slider')[0])
 
     def end_scroll(self, event):
+        """
+        Stop the scrolling
+        :param event: the event that triggered the call to this function
+        """
         if self.orient == 'vertical':
             self.new_start_y = event.y
         elif self.orient == 'horizontal':
             self.new_start_x = event.x
 
     def move_on_scroll(self, event):
+        """
+        Move the slider on scroll
+        :param event: the event that triggered the call to this function
+        """
         jerkiness = 3
 
         if self.orient == 'vertical':
             if abs(event.y - self.last_y) < jerkiness:
                 return
             # scroll the scrolled widget in proportion to mouse motion
-            #   compute w///hether scrolling up or down
+            #   compute whether scrolling up or down
             delta = 1 if event.y > self.last_y else -1
             #   remember this location for the next time this is called
             self.last_y = event.y
             #   do the scroll
             self.command('scroll', delta, 'units')
-            # afix slider to mouse pointer
+            # fix slider to mouse pointer
             mouse_pos = event.y - self.first_y
             if self.new_start_y != 0:
                 mouse_pos = event.y - self.y_move_on_click
-            self.command('moveto', mouse_pos/self.winfo_height())
+            self.command('moveto', mouse_pos / self.winfo_height())
         elif self.orient == 'horizontal':
             if abs(event.x - self.last_x) < jerkiness:
                 return
-            # scroll the scrolled widget in proportion to mouse motion
-            # compute whether scrolling left or right
+            # scroll the scrolled widget in proportion to mouse motion compute whether scrolling left or right
             delta = 1 if event.x > self.last_x else -1
             # remember this location for the next time this is called
             self.last_x = event.x
             # do the scroll
             self.command('scroll', delta, 'units')
-            # afix slider to mouse pointer
+            # fix slider to mouse pointer
             mouse_pos = event.x - self.first_x
             if self.new_start_x != 0:
                 mouse_pos = event.x - self.x_move_on_click
-            self.command('moveto', mouse_pos/self.winfo_width())
+            self.command('moveto', mouse_pos / self.winfo_width())
 
     def scroll_on_wheel(self, event):
+        """
+        Scrolling when mouse wheel is used
+        :param event: the event that triggered the call to this function
+        """
         if self.grid_info() == {}:
             return
 

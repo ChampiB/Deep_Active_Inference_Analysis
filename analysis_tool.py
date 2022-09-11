@@ -3,6 +3,9 @@ import os
 
 
 if __name__ == '__main__':
+    """
+    Start the analysis tool
+    """
     # Get the data directory
     data_dir = os.getenv('DATA_DIR')
     if data_dir is None:

@@ -11,7 +11,7 @@ from gui.widgets.frames.TopBarFrame import TopBarFrame
 
 class ProjectSelectionPage(tk.Frame):
     """
-    The page used for selecting the project to edit
+    The page used to select the project to edit
     """
 
     def __init__(self, parent):
@@ -92,6 +92,11 @@ class ProjectSelectionPage(tk.Frame):
         self.refresh()
 
     def get_project_name(self, index):
+        """
+        Getter
+        :param index: the project's index
+        :return: the project name
+        """
         return "New Project" if index >= len(self.projects) else self.projects[index]
 
     def display_projects(self):
@@ -122,7 +127,7 @@ class ProjectSelectionPage(tk.Frame):
 
     def get_project_button(self, index):
         """
-        Getter.
+        Getter
         :param index: the project index of the button that must be returned
         :return: the button
         """
@@ -149,7 +154,7 @@ class ProjectSelectionPage(tk.Frame):
 
     def get_delete_button(self, index):
         """
-        Getter.
+        Getter
         :param index: the project index of the button that must be returned
         :return: the button
         """

@@ -1,6 +1,5 @@
 import os
 import tkinter as tk
-from tkinter import ttk
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.Entry import Entry
@@ -8,8 +7,15 @@ from gui.widgets.modern.LabelFactory import LabelFactory
 
 
 class NewAgentFrame(tk.Frame):
+    """
+    A class allowing to create a new agent
+    """
 
     def __init__(self, parent):
+        """
+        Constructor
+        :param parent: parent widget
+        """
 
         # Call parent constructor
         super().__init__(parent)
@@ -58,6 +64,11 @@ class NewAgentFrame(tk.Frame):
         self.change_agent_template()
 
     def change_agent_template(self, event=None):
+        """
+        Change the agent template
+        :param event: unused
+        """
+        # TODO
         print(f"change_agent_template({self.agent_template_combo_box.get()})")
 
     def get_all_agents_class(self):
@@ -84,4 +95,7 @@ class NewAgentFrame(tk.Frame):
         return agents
 
     def refresh(self):
+        """
+        Refresh the new agent frame
+        """
         pass

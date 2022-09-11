@@ -1,6 +1,5 @@
 import os
 import tkinter as tk
-
 from gui.AnalysisConfig import AnalysisConfig
 
 

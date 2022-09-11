@@ -1,15 +1,19 @@
-import os
 import tkinter as tk
-from tkinter import ttk
 from gui.AnalysisConfig import AnalysisConfig
-from gui.widgets.modern.ButtonFactory import ButtonFactory
 from gui.widgets.modern.Entry import Entry
 from gui.widgets.modern.LabelFactory import LabelFactory
 
 
 class NewEnvironmentFrame(tk.Frame):
+    """
+    A class allowing to create a new environment
+    """
 
     def __init__(self, parent):
+        """
+        Constructor
+        :param parent: parent widget
+        """
 
         # Call parent constructor
         super().__init__(parent)
@@ -40,24 +44,8 @@ class NewEnvironmentFrame(tk.Frame):
         self.renaming_entry.grid(row=1, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
         self.renaming_entry.focus()
 
-        # Add the rename button
-        self.rename_button = ButtonFactory.create(self, text="Rename", command=self.change_project_name, theme="blue")
-        self.rename_button.grid(row=2, column=1, columnspan=2, pady=10, padx=(0, 10), ipady=10, sticky="nsew")
-
-    def change_project_name(self):
-        # Check that the new project name is not empty
-        self.renaming_entry.remove_help_message()
-        new_project_name = self.renaming_entry.get()
-        if new_project_name == "":
-            self.place_forget()
-            return
-
-        # Change project name
-        projects_directory = self.conf.projects_directory
-        self.parent.top_bar.name_label.config(text=new_project_name)
-        os.rename(projects_directory + self.parent.project_name, projects_directory + new_project_name)
-        self.parent.project_name = new_project_name
-        self.place_forget()
-
     def refresh(self):
+        """
+        Refresh the new environment frame
+        """
         pass

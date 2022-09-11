@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from gui.AnalysisAssets import AnalysisAssets
+from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.ButtonFactory import ButtonFactory
 from gui.widgets.modern.CheckButton import CheckButton
 from gui.widgets.modern.LabelFactory import LabelFactory
@@ -8,16 +9,26 @@ from gui.widgets.modern.ToolTip import ToolTip
 
 
 class ProjectTreeFrame(tk.Frame):
+    """
+    A class representing the project tree structure
+    """
 
-    def __init__(self, parent, conf):
+    def __init__(self, parent):
+        """
+        Constructor
+        :param parent: the parent widget
+        """
+
+        # Store config and window
+        self.conf = AnalysisConfig.instance
+
         # Call parent constructor
-        super().__init__(parent, background=conf.colors["gray"])
+        super().__init__(parent, background=self.conf.colors["gray"])
 
-        self.conf = conf
         self.assets = AnalysisAssets.instance
         self.parent = parent.master.master
 
-        self.projects_directory = conf.projects_directory
+        self.projects_directory = self.conf.projects_directory
         self.current_index = 0
 
         self.selected_entries = []
@@ -28,6 +39,11 @@ class ProjectTreeFrame(tk.Frame):
 
     @staticmethod
     def get_all_files(directory):
+        """
+        Get all files within a directory
+        :param directory: the directory
+        :return: all files
+        """
         # For each directory in the projects directory
         files = []
         for entry in os.listdir(directory):
@@ -36,6 +52,13 @@ class ProjectTreeFrame(tk.Frame):
         return files
 
     def add_entry(self, entry_name, tag, leaf_node=True, command=None):
+        """
+        Add an entry to the tree
+        :param entry_name: the entry name
+        :param tag: the tag (i.e., group containing the entry)
+        :param leaf_node: whether the entry is a leaf node
+        :param command: the command to call if the user double-click on the entry
+        """
         col_index = 0
         if tag not in self.widgets.keys():
             self.widgets[tag] = []
@@ -63,14 +86,20 @@ class ProjectTreeFrame(tk.Frame):
             checkbox_var = tk.IntVar()
             checkbox = CheckButton(
                 self, variable=checkbox_var,
-                command=lambda f=entry_name, d=tag: self.add_to_selected_entries(checkbox_var, f, d)
+                command=lambda f=entry_name, d=tag: self.update_selected_entries(checkbox_var, f, d)
             )
             checkbox.grid(row=self.current_index, column=col_index, sticky="e", pady=3, padx=(3, 10), ipady=3, ipadx=3)
             self.columnconfigure(col_index, weight=1)
             self.widgets[tag].append(checkbox)
             col_index += 1
 
-    def add_to_selected_entries(self, checkbox_var, f, d):
+    def update_selected_entries(self, checkbox_var, f, d):
+        """
+        Update the selected by adding or removing the file-directory pair depending on the checkbox state
+        :param checkbox_var: the checkbox state
+        :param f: the file name
+        :param d: the directory name
+        """
         if checkbox_var.get():
             self.selected_entries.append((d, f))
         else:
@@ -78,6 +107,12 @@ class ProjectTreeFrame(tk.Frame):
                 self.selected_entries.remove((d, f))
 
     def display_directory(self, dir_name, files, allow_creation_of=None):
+        """
+        Display a directory in the tree structure
+        :param dir_name: the directory's name
+        :param files: the files in the directory
+        :param allow_creation_of: the entry type whose creation should be allowed the i.e., "agents" or "environments"
+        """
         self.add_entry(dir_name, dir_name + "/", leaf_node=False)
         self.current_index += 1
         for file in files:
@@ -91,6 +126,10 @@ class ProjectTreeFrame(tk.Frame):
             self.current_index += 1
 
     def update_directory(self, dir_name):
+        """
+        Display a directory in the tree structure, without creating it
+        :param dir_name: the directory's name
+        """
         if dir_name not in self.widgets.keys():
             return
         if self.directories[dir_name][0]:
@@ -101,6 +140,11 @@ class ProjectTreeFrame(tk.Frame):
                 widget.grid_remove()
 
     def expand_or_hide_directory(self, directory_name, button):
+        """
+        Allows to expand or hide a directory within the tree structure
+        :param directory_name: the directory name to expand or hide
+        :param button: the button whose image should be updated
+        """
         (expanded, files) = self.directories[directory_name]
         expanded = not expanded
         self.directories[directory_name] = (expanded, files)
@@ -110,6 +154,10 @@ class ProjectTreeFrame(tk.Frame):
         self.refresh(self.project_name)
 
     def add_new_agent_entry(self, tag):
+        """
+        Add an entry allowing to create a new agent
+        :param tag: the entry tag (i.e., group)
+        """
         button = ButtonFactory.create(
             self, image=self.assets.get("new_button", subsample=17), theme="light",
             command=lambda n="NewAgentFrame": self.parent.show_frame(n)
@@ -122,6 +170,10 @@ class ProjectTreeFrame(tk.Frame):
             self.widgets[tag].append(button)
 
     def add_new_environments_entry(self, tag):
+        """
+        Add an entry allowing to create a new environment
+        :param tag: the entry tag (i.e., group)
+        """
         button = ButtonFactory.create(
             self, image=self.assets.get("new_button", subsample=17), theme="light",
             command=lambda n="NewEnvironmentFrame": self.parent.show_frame(n)
@@ -134,6 +186,10 @@ class ProjectTreeFrame(tk.Frame):
             self.widgets[tag].append(button)
 
     def refresh(self, project):
+        """
+        Refresh the project tree structure
+        :param project: the current project name
+        """
         self.current_index = 0
 
         if project != self.project_name:
@@ -166,4 +222,10 @@ class ProjectTreeFrame(tk.Frame):
                 self.update_directory(directory)
 
     def display_details(self, event, directory, file):
+        """
+        Display the details of the entry
+        :param event: unused
+        :param directory: the directory whose details should be displayed
+        :param file: the file whose details should be displayed
+        """
         print(f"display_details({directory}, {file})")  # TODO

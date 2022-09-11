@@ -13,7 +13,7 @@ class Combobox(tk.Frame):
 
     def __init__(self, parent, values, command):
         """
-        Create the
+        Constructor
         :param parent: the parent widget
         :param values: the possible value the combobox can be in
         :param command: the callback function to call when the combo-box's value has changed
@@ -48,26 +48,48 @@ class Combobox(tk.Frame):
         self.list_values_widget = None
 
     def on_leave_list_of_values(self, event):
+        """
+        Keep track of when the mouse leave the list of value
+        :param event: unused
+        """
         self.on_list_of_values = False
         Timer(0.2, self.hide_list_of_value_if_needed).start()
 
     def on_enter_list_of_values(self, event):
+        """
+        Keep track of when the mouse enter the list of value
+        :param event: unused
+        """
         self.on_list_of_values = True
         Timer(0.2, self.hide_list_of_value_if_needed).start()
 
     def on_leave_combobox(self, event):
+        """
+        Keep track of when the mouse leave the combobox
+        :param event: unused
+        """
         self.on_combobox = False
         Timer(0.2, self.hide_list_of_value_if_needed).start()
 
     def on_enter_combobox(self, event):
+        """
+        Keep track of when the mouse enter the combobox
+        :param event: unused
+        """
         self.on_combobox = True
         Timer(0.2, self.hide_list_of_value_if_needed).start()
 
     def hide_list_of_value_if_needed(self):
+        """
+        Hide the list of value when the mouse is not over it anymore
+        """
         if not self.on_combobox and not self.on_list_of_values and self.list_values_widget is not None:
             self.list_values_widget.withdraw()
 
     def display_or_hide_list_of_values(self):
+        """
+        Hide the list of values if currently displayed, and display the list of values if currently hidden
+        """
         # Create the list of values if it does not exist
         if self.list_values_widget is None:
             x, y, cx, cy = self.bbox()
@@ -92,6 +114,10 @@ class Combobox(tk.Frame):
             self.list_values_widget.deiconify()
 
     def update_value(self, value):
+        """
+        Update the current value of the combobox
+        :param value: the new value
+        """
         if self.list_values_widget is None:
             return
         self.list_values_widget.withdraw()
@@ -100,4 +126,8 @@ class Combobox(tk.Frame):
             self.command()
 
     def get(self):
+        """
+        Getter
+        :return: the current value of the combobox
+        """
         return self.current_value.get()

@@ -3,11 +3,23 @@ from gui.AnalysisConfig import AnalysisConfig
 
 
 class LabelFactory:
+    """
+    A class allowing the creation of labels of different types
+    """
 
     conf = AnalysisConfig.instance
 
     @staticmethod
     def create(parent, text=None, image=None, theme="dark", font_size=None):
+        """
+        Create a label
+        :param parent: the parent widget
+        :param text: the label's text
+        :param image: the label's image
+        :param theme: the label's theme, i.e., "dark", "gray", "white" or "tooltip"
+        :param font_size: the text font size
+        :return: the created label
+        """
         if theme == "dark":
             return LabelFactory.create_dark_label(parent, text, image, font_size)
         if theme == "gray":
@@ -19,6 +31,14 @@ class LabelFactory:
 
     @staticmethod
     def create_dark_label(parent, text, image, font_size):
+        """
+        Create a dark label
+        :param parent: the parent widget
+        :param text: the label's text
+        :param image: the label's image
+        :param font_size: the text font size
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.LEFT
@@ -37,6 +57,14 @@ class LabelFactory:
 
     @staticmethod
     def create_gray_label(parent, text, image, font_size):
+        """
+        Create a gray label
+        :param parent: the parent widget
+        :param text: the label's text
+        :param image: the label's image
+        :param font_size: the text font size
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.LEFT
@@ -55,6 +83,14 @@ class LabelFactory:
 
     @staticmethod
     def create_white_label(parent, text, image, font_size):
+        """
+        Create a white label
+        :param parent: the parent widget
+        :param text: the label's text
+        :param image: the label's image
+        :param font_size: the text font size
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.LEFT
@@ -72,6 +108,14 @@ class LabelFactory:
 
     @staticmethod
     def create_tooltip_label(parent, text, image, font_size):
+        """
+        Create a tooltip label
+        :param parent: the parent widget
+        :param text: the label's text
+        :param image: the label's image
+        :param font_size: the text font size
+        :return: the created label
+        """
         parameters = {}
         if text is not None and image is not None:
             parameters["compound"] = tk.LEFT

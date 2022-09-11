@@ -30,6 +30,11 @@ class AnalysisConfig:
 
     @staticmethod
     def get(data_directory=None):
+        """
+        Getter
+        :param data_directory: the directory containing all the data
+        :return: the configuration
+        """
         if AnalysisConfig.instance is None:
             AnalysisConfig.instance = AnalysisConfig(data_directory)
         return AnalysisConfig.instance

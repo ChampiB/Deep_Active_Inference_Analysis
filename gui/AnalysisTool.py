@@ -14,8 +14,8 @@ class AnalysisTool:
         :param data_directory: the data directory
         """
         # Create the configuration and assets instances
-        config = AnalysisConfig.get(data_directory=data_directory)
-        AnalysisAssets.get(assets_directory=config.assets_directory)
+        AnalysisConfig.get(data_directory=data_directory)
+        AnalysisAssets.get(assets_directory=AnalysisConfig.instance.assets_directory)
 
         # Create the main window and display the initial page
         self.window = AnalysisWindow()

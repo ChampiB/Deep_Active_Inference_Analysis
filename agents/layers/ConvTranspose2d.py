@@ -2,10 +2,10 @@ import torch.nn as nn
 import math
 
 
-#
-# Class wrapping the nn.ConvTranspose2d layer to add the padding='same' feature.
-#
 class ConvTranspose2d(nn.Module):
+    """
+    Class wrapping the nn.ConvTranspose2d layer to add the padding='same' feature.
+    """
 
     def __init__(
         self, in_channels, out_channels, kernel_size, stride=1,
@@ -13,22 +13,22 @@ class ConvTranspose2d(nn.Module):
         padding_mode='zeros', device=None, dtype=None
     ):
         """
-        Constructor of the convolutional transpose layer.
-        :param in_channels: see documentation of torch.nn.ConvTranspose2d.
-        :param out_channels: see documentation of torch.nn.ConvTranspose2d.
-        :param kernel_size: see documentation of torch.nn.ConvTranspose2d.
-        :param stride: see documentation of torch.nn.ConvTranspose2d.
+        Constructor of the convolutional transpose layer
+        :param in_channels: see documentation of torch.nn.ConvTranspose2d
+        :param out_channels: see documentation of torch.nn.ConvTranspose2d
+        :param kernel_size: see documentation of torch.nn.ConvTranspose2d
+        :param stride: see documentation of torch.nn.ConvTranspose2d
         :param padding: in addition to what is described in the documentation of
         torch.nn.ConvTranspose2d, this parameter can be a string equals to either
         'valid' or 'same'. If set to 'valid', then no padding is performed. If set
-        to 'same', the layer will ensure that: output shape = input shape * stride.
-        :param output_padding: see documentation of torch.nn.ConvTranspose2d.
-        :param groups: see documentation of torch.nn.ConvTranspose2d.
-        :param bias: see documentation of torch.nn.ConvTranspose2d.
-        :param dilation: see documentation of torch.nn.ConvTranspose2d.
-        :param padding_mode: see documentation of torch.nn.ConvTranspose2d.
-        :param device: see documentation of torch.nn.ConvTranspose2d.
-        :param dtype: see documentation of torch.nn.ConvTranspose2d.
+        to 'same', the layer will ensure that: output shape = input shape * stride
+        :param output_padding: see documentation of torch.nn.ConvTranspose2d
+        :param groups: see documentation of torch.nn.ConvTranspose2d
+        :param bias: see documentation of torch.nn.ConvTranspose2d
+        :param dilation: see documentation of torch.nn.ConvTranspose2d
+        :param padding_mode: see documentation of torch.nn.ConvTranspose2d
+        :param device: see documentation of torch.nn.ConvTranspose2d
+        :param dtype: see documentation of torch.nn.ConvTranspose2d
         """
         super().__init__()
 
@@ -65,18 +65,18 @@ class ConvTranspose2d(nn.Module):
 
     def forward(self, x):
         """
-        Compute the forward pass of the custom ConvTranspose2d.
-        :param x: the input of the layer.
-        :return: the output of the layer.
+        Compute the forward pass of the custom ConvTranspose2d
+        :param x: the input of the layer
+        :return: the output of the layer
         """
         out = self.deconv_layer(x)
         return self.apply_padding_same(out) if self.padding_same else out
 
     def apply_padding_same(self, tensor):
         """
-        Apply the padding same to the input tensor.
-        :param tensor: the input tensor.
-        :return: the output tensor after applying the padding same.
+        Apply the padding same to the input tensor
+        :param tensor: the input tensor
+        :return: the output tensor after applying the padding same
         """
         return tensor[
                :, :,  # Select all batch elements and all channels.
