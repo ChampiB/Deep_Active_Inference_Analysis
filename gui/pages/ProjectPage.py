@@ -1,7 +1,6 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.frames.TopBarFrame import TopBarFrame
 from gui.widgets.frames.ProjectTreeFrame import ProjectTreeFrame
@@ -58,7 +57,7 @@ class ProjectPage(tk.Frame):
         self.project_window.pack(fill="both", expand=True)
 
         # Frame system
-        self.frames_class = ProjectPage.get_all_frames_class()
+        self.frames_class = self.conf.get_all_classes(self.conf.frames_directory, "gui.widgets.frames.")
         self.frames = {}
         self.current_frame = None
 
@@ -126,30 +125,3 @@ class ProjectPage(tk.Frame):
 
         # Update project structure
         self.project_tree.refresh(project)
-
-    @staticmethod
-    def get_all_frames_class():
-        """
-        Retrieve all the available frames
-        :return: all the available frames
-        """
-        # Get frames directory
-        path = os.path.dirname(os.path.abspath(__file__)) + "/../widgets/frames/"
-
-        # For each file in the frames directory
-        frames = {}
-        for file in os.listdir(path):
-            # Check that the file is a python file but not the init.py
-            if not file.endswith('.py') or file == '__init__.py':
-                continue
-
-            # Get the class and module
-            class_name = file[:-3]
-            class_module = __import__("gui.widgets.frames." + class_name, fromlist=[class_name])
-
-            # Get the frames' class
-            module_dict = class_module.__dict__
-            for obj in module_dict:
-                if isinstance(module_dict[obj], type) and module_dict[obj].__module__ == class_module.__name__:
-                    frames[class_name] = getattr(class_module, obj)
-        return frames

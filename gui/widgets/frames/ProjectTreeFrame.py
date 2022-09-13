@@ -37,20 +37,6 @@ class ProjectTreeFrame(tk.Frame):
         self.widgets = {}  # {"tag": [widget_1, widget_2, ...]}
         self.directories = {}  # {"name": (expanded, files)}
 
-    @staticmethod
-    def get_all_files(directory):
-        """
-        Get all files within a directory
-        :param directory: the directory
-        :return: all files
-        """
-        # For each directory in the projects directory
-        files = []
-        for entry in os.listdir(directory):
-            if os.path.isfile(directory + entry):
-                files.append(entry)
-        return files
-
     def add_entry(self, entry_name, tag, leaf_node=True, command=None):
         """
         Add an entry to the tree
@@ -125,13 +111,23 @@ class ProjectTreeFrame(tk.Frame):
             self.add_new_environments_entry(dir_name)
             self.current_index += 1
 
-    def update_directory(self, dir_name):
+    def update_directory(self, project, dir_name):
         """
         Display a directory in the tree structure, without creating it
+        :param project: the project's name
         :param dir_name: the directory's name
         """
+        # If the directory name is invalid, then return
         if dir_name not in self.widgets.keys():
             return
+
+        # Add the missing agent files
+        agents = self.conf.get_all_files(self.projects_directory + f"{project}/{dir_name}/")
+        for agent in agents:
+            if agent not in self.directories[dir_name][1]:
+                pass
+
+        # Display or hide the directory
         if self.directories[dir_name][0]:
             for widget in self.widgets[dir_name]:
                 widget.grid()
@@ -192,34 +188,33 @@ class ProjectTreeFrame(tk.Frame):
         """
         self.current_index = 0
 
-        if project != self.project_name:
-            # Forget old widgets, directories and selected entries
-            for widgets in self.widgets.values():
-                for widget in widgets:
-                    widget.grid_forget()
-            self.widgets.clear()
-            self.directories.clear()
-            self.selected_entries = []
+        # Forget old widgets, directories and selected entries
+        for widgets in self.widgets.values():
+            for widget in widgets:
+                widget.grid_forget()
+        self.widgets.clear()
+        self.directories.clear()
+        self.selected_entries = []
 
-            # Load new agents and environments
-            agents = self.get_all_files(self.projects_directory + project + "/agents/")
-            self.directories["Agents"] = (True, agents)
-            environments = self.get_all_files(self.projects_directory + project + "/environments/")
-            self.directories["Environments"] = (True, environments)
+        # Load new agents and environments
+        agents = self.conf.get_all_files(self.projects_directory + project + "/agents/")
+        self.directories["Agents"] = (True, agents)
+        environments = self.conf.get_all_files(self.projects_directory + project + "/environments/")
+        self.directories["Environments"] = (True, environments)
 
-            # Display directories
-            for directory, (_, files) in self.directories.items():
-                self.display_directory(directory, files, allow_creation_of=directory.lower())
+        # Display directories
+        for directory, (_, files) in self.directories.items():
+            self.display_directory(directory, files, allow_creation_of=directory.lower())
 
-            # Set project name
-            self.project_name = project
+        # Set project name
+        self.project_name = project
 
-            # Reset the parent's frame
-            self.parent.show_frame("EmptyFrame")
-        else:
-            # Update directories
-            for directory in self.directories.keys():
-                self.update_directory(directory)
+        # Reset the parent's frame
+        self.parent.show_frame("EmptyFrame")
+        # else:
+        # Update directories
+        #     for directory in self.directories.keys():
+        #        self.update_directory(project, directory)
 
     def display_details(self, event, directory, file):
         """

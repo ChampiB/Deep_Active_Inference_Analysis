@@ -40,7 +40,8 @@ class ProjectSelectionPage(tk.Frame):
 
         # Create the top bar
         self.top_bar = TopBarFrame(
-            self, display_project_name=False, display_run_button=False, display_analysis_button=False, command="quit"
+            self, display_delete_button=False, display_project_name=False, display_run_button=False,
+            display_analysis_button=False, command="quit"
         )
         self.top_bar.grid(row=0, column=2, sticky="nsew")
 
@@ -185,20 +186,6 @@ class ProjectSelectionPage(tk.Frame):
         self.refresh()
 
     @staticmethod
-    def get_all_projects(projects_directory):
-        """
-        Retrieve all the existing project
-        :param projects_directory: the project directory
-        :return: all the existing project
-        """
-        # For each directory in the projects directory
-        projects = []
-        for entry in os.listdir(projects_directory):
-            if os.path.isdir(projects_directory + entry):
-                projects.append(entry)
-        return projects
-
-    @staticmethod
     def truncate(string, max_len):
         """
         Truncate the string if its length is superior to the maximum length
@@ -215,7 +202,7 @@ class ProjectSelectionPage(tk.Frame):
         Refresh the page
         """
         # Load all projects
-        self.projects = self.get_all_projects(self.conf.projects_directory)
+        self.projects = self.conf.get_all_directories(self.conf.projects_directory)
 
         # Clear old buttons, and
         key_to_delete = []

@@ -15,11 +15,12 @@ class AnalysisAssets:
         """
         self.images = {
             "run_button": 6,
-            "analysis_button": 26,
+            "analysis_button": 4,
             "close_button": 13,
             "existing_project_button": 2,
             "new_button": 2,
             "delete_button": 15,
+            "red_delete_button": 4,
             "black_chevron_down": 8,
             "chevron_right": 9,
             "chevron_down": 9,

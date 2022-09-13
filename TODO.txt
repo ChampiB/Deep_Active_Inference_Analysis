@@ -1,6 +1,12 @@
-0. Clean up the code
-
 1. Implement NewAgentFrame
+1.a. implement the create_dqn function
+1.b. implement the create_hmm function
+1.c. implement the create_chmm function
+1.d. implement the create_dai function
+1.d. add n_states in vae
+1.e. allow the selection of "epsilon_start, epsilon_end, epsilon_decay" when action selection is set to EpsilonGreedy
+1.f. allow the selection of "gain" when action selection is set to SoftmaxSampling
+
 2. Implement NewEnvironmentFrame
 3. Display agent specifications on double click
 4. Display environments specifications on double click + allows the user to play the environment to get a feel of how it works

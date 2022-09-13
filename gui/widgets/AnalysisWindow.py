@@ -1,4 +1,3 @@
-import os
 import tkinter as tk
 from gui.AnalysisConfig import AnalysisConfig
 
@@ -28,7 +27,7 @@ class AnalysisWindow(tk.Tk):
         self.config(background=self.conf.colors["dark_gray"])
 
         # List of all available pages' class and instance, as well as the currently displayed page
-        self.pages_class = AnalysisWindow.get_all_pages_class()
+        self.pages_class = self.conf.get_all_classes(self.conf.pages_directory, "gui.pages.")
         self.pages = {}
         self.current_page = None
 
@@ -63,30 +62,3 @@ class AnalysisWindow(tk.Tk):
         :param event: the event that triggered the call to the function (not used)
         """
         self.destroy()
-
-    @staticmethod
-    def get_all_pages_class():
-        """
-        Retrieve all the available pages
-        :return: all the available pages
-        """
-        # Get pages directory
-        path = os.path.dirname(os.path.abspath(__file__)) + "/../pages/"
-
-        # For each file in the pages directory
-        pages = {}
-        for file in os.listdir(path):
-            # Check that the file is a python file but not the init.py
-            if not file.endswith('.py') or file == '__init__.py':
-                continue
-
-            # Get the class and module
-            class_name = file[:-3]
-            class_module = __import__("gui.pages." + class_name, fromlist=[class_name])
-
-            # Get the pages' class
-            module_dict = class_module.__dict__
-            for obj in module_dict:
-                if isinstance(module_dict[obj], type) and module_dict[obj].__module__ == class_module.__name__:
-                    pages[class_name] = getattr(class_module, obj)
-        return pages

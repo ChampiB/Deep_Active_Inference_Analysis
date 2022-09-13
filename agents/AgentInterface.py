@@ -12,11 +12,3 @@ class AgentInterface(abc.ABC):
         :param name: the agent name
         """
         self.name = name
-        self.template = None  # TODO
-
-    def get_template(self):
-        """
-        Getter
-        :return: the agent template
-        """
-        return self.template

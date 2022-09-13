@@ -8,10 +8,10 @@ from gui.widgets.modern.LabelFactory import LabelFactory
 
 class Combobox(tk.Frame):
     """
-    A scrollbar is gridded as a sibling of what it's scrolling.
+    A class representing modern looking combobox
     """
 
-    def __init__(self, parent, values, command):
+    def __init__(self, parent, values, command=None):
         """
         Constructor
         :param parent: the parent widget
@@ -123,7 +123,8 @@ class Combobox(tk.Frame):
         self.list_values_widget.withdraw()
         if self.current_value.get() != value:
             self.current_value.set(value)
-            self.command()
+            if self.command is not None:
+                self.command()
 
     def get(self):
         """

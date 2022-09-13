@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from gui.AnalysisAssets import AnalysisAssets
 from gui.AnalysisConfig import AnalysisConfig
@@ -13,8 +14,8 @@ class TopBarFrame(tk.Frame):
     """
 
     def __init__(
-        self, parent, display_project_name=True, display_run_button=True, display_analysis_button=True,
-        command="go_to_project_selection_page"
+        self, parent, display_delete_button=True, display_project_name=True, display_run_button=True,
+        display_analysis_button=True, command="go_to_project_selection_page"
     ):
         """
         Constructor
@@ -38,7 +39,9 @@ class TopBarFrame(tk.Frame):
         # Add project name label
         self.name_label = None
         if display_project_name:
-            self.name_label = ButtonFactory.create(self, text=parent.project_name, command=self.ask_new_project_name)
+            self.name_label = ButtonFactory.create(
+                self, text=parent.project_name, command=self.ask_new_project_name, font_size=12
+            )
             self.name_label.grid(row=0, column=col_index, padx=6, pady=6)
             col_index += 1
 
@@ -55,6 +58,15 @@ class TopBarFrame(tk.Frame):
             self.analysis_button = ButtonFactory.create(self, image=self.assets.get("analysis_button"))
             self.analysis_button.grid(row=0, column=col_index, padx=3, pady=3, ipadx=3, ipady=3)
             self.analysis_button_tip = ToolTip(self.analysis_button, f"Run analysis")
+            col_index += 1
+
+        # Add the delete button
+        if display_delete_button:
+            self.delete_button = ButtonFactory.create(
+                self, image=self.assets.get("red_delete_button"), command=self.delete_selection
+            )
+            self.delete_button.grid(row=0, column=col_index, padx=3, pady=3, ipadx=4, ipady=3)
+            self.delete_button_tip = ToolTip(self.delete_button, f"Delete selected agents and environments")
             col_index += 1
 
         # Add empty widget
@@ -98,3 +110,11 @@ class TopBarFrame(tk.Frame):
         :param project: the project name to display
         """
         self.name_label.config(text=project)
+
+    def delete_selection(self):
+        """
+        Delete the selected agents and environments
+        """
+        for dir_name, file_name in self.parent.project_tree.selected_entries:
+            os.remove(self.conf.projects_directory + f"{self.parent.project_name}/{dir_name.lower()}/{file_name}")
+        self.parent.project_tree.refresh(self.parent.project_name)
