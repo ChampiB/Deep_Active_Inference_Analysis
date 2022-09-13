@@ -4,7 +4,7 @@ from agents.layers.ConvTranspose2d import ConvTranspose2d
 import torch
 
 
-class ConvDecoder84(nn.Module):
+class Conv84(nn.Module):
     """
     Class implementing a deconvolution decoder for 84 by 84 images
     """
@@ -66,7 +66,7 @@ class ConvDecoder84(nn.Module):
         return self.__up_conv_net(x)
 
 
-class ConvDecoder64(nn.Module):
+class Conv64(nn.Module):
     """
     Class implementing a deconvolution decoder for 64 by 64 images
     """
@@ -108,7 +108,7 @@ class ConvDecoder64(nn.Module):
         return self.__up_conv_net(x)
 
 
-class ConvDecoderDAIMC(nn.Module):
+class ConvDAIMC(nn.Module):
     """
     Class implementing a deconvolution decoder for 64 by 64 images
     """

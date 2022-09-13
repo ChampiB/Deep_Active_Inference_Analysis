@@ -113,11 +113,11 @@ class ProjectSelectionPage(tk.Frame):
 
                 # Add project button
                 project_button = self.get_project_button(index)
-                project_button.grid(row=2 * i, column=j, sticky='news', padx=70, pady=(30, 0))
+                project_button.grid(row=2 * i, column=j, sticky='news', padx=60, pady=(30, 0))
 
                 # Add delete button
                 delete_button = self.get_delete_button(index)
-                delete_button.grid(row=2 * i + 1, column=j, sticky='news', padx=70, pady=(0, 30))
+                delete_button.grid(row=2 * i + 1, column=j, sticky='news', padx=60, pady=(0, 30))
 
                 # Store buttons
                 key = self.get_project_name(index)
@@ -204,15 +204,11 @@ class ProjectSelectionPage(tk.Frame):
         # Load all projects
         self.projects = self.conf.get_all_directories(self.conf.projects_directory)
 
-        # Clear old buttons, and
-        key_to_delete = []
-        for key, (project_button, delete_button) in self.buttons.items():
-            if key not in self.projects:
-                project_button.grid_forget()
-                delete_button.grid_forget()
-                key_to_delete.append(key)
-        for key in key_to_delete:
-            del self.buttons[key]
+        # Clear old buttons
+        for _, (project_button, delete_button) in self.buttons.items():
+            project_button.grid_forget()
+            delete_button.grid_forget()
+        self.buttons.clear()
 
         # Display the projects
         self.display_projects()

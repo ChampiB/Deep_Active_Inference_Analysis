@@ -1,0 +1,9 @@
+{
+  "name": "EpistemicSprites",
+  "module": "environments.impl.SpritesEnvironment",
+  "class": "SpritesEnvironment",
+  "difficulty": "Hard",
+  "max_trial_length": "50",
+  "n_repeats": "5",
+  "epistemic": "True"
+}

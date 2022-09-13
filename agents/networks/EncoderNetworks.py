@@ -3,7 +3,7 @@ from agents.layers.DiagonalGaussian import DiagonalGaussian as Gaussian
 from torch import nn, zeros
 
 
-class ConvEncoder84(nn.Module):
+class Conv84(nn.Module):
     """
     Class implementing a convolutional encoder for 84 by 84 images
     """
@@ -73,7 +73,7 @@ class ConvEncoder84(nn.Module):
         return self.__net(x)
 
 
-class ConvEncoder64(nn.Module):
+class Conv64(nn.Module):
     """
     Class implementing a convolutional encoder for 64 by 64 images
     """
@@ -136,7 +136,7 @@ class ConvEncoder64(nn.Module):
         return self.__net(x)
 
 
-class ConvEncoderDAIMC(nn.Module):
+class ConvDAIMC(nn.Module):
     """
     Class implementing a convolutional encoder for 64 by 64 images
     """

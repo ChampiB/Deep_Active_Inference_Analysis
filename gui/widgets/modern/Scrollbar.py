@@ -40,7 +40,7 @@ class Scrollbar(tk.Canvas):
         self.x_move_on_click = 0
 
         self.slider_color = self.conf.colors["scrollbar"]
-        self.trough_color = self.conf.colors["gray"]
+        self.trough_color = self.conf.colors["dark_gray"]
 
         self.config(bg=self.trough_color, bd=0, highlightthickness=0, width=15)
 
@@ -75,7 +75,6 @@ class Scrollbar(tk.Canvas):
         :param lo: current position of the slide (top edge of the slider)
         :param hi: current position of the slide (bottom edge of the slider)
         """
-
         lo = float(lo)
         hi = float(hi)
 
@@ -183,12 +182,19 @@ class Scrollbar(tk.Canvas):
                 mouse_pos = event.x - self.x_move_on_click
             self.command('moveto', mouse_pos / self.winfo_width())
 
+    def is_hidden(self):
+        """
+        Check whether the scrollbar is hidden or not
+        :return: True if the scrollbar is hidden, false otherwise
+        """
+        return self.grid_info() == {}
+
     def scroll_on_wheel(self, event):
         """
         Scrolling when mouse wheel is used
         :param event: the event that triggered the call to this function
         """
-        if self.grid_info() == {}:
+        if self.is_hidden():
             return
 
         delta = 0

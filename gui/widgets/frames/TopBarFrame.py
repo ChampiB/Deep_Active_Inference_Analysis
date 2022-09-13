@@ -66,7 +66,7 @@ class TopBarFrame(tk.Frame):
                 self, image=self.assets.get("red_delete_button"), command=self.delete_selection
             )
             self.delete_button.grid(row=0, column=col_index, padx=3, pady=3, ipadx=4, ipady=3)
-            self.delete_button_tip = ToolTip(self.delete_button, f"Delete selected agents and environments")
+            self.delete_button_tip = ToolTip(self.delete_button, f"Delete")
             col_index += 1
 
         # Add empty widget

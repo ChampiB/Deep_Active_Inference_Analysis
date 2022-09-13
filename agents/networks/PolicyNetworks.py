@@ -68,7 +68,7 @@ class LinearRelu4x100(nn.Module):
         return self.__net(states)
 
 
-class ConvPolicy64(nn.Module):
+class Conv64(nn.Module):
     """
     Implement the policy network that compute the q-values
     """

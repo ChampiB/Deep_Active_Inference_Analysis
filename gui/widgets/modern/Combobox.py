@@ -11,11 +11,12 @@ class Combobox(tk.Frame):
     A class representing modern looking combobox
     """
 
-    def __init__(self, parent, values, command=None):
+    def __init__(self, parent, values, default_value=None, command=None):
         """
         Constructor
         :param parent: the parent widget
         :param values: the possible value the combobox can be in
+        :param default_value: the default value of the combobox
         :param command: the callback function to call when the combo-box's value has changed
         """
 
@@ -35,7 +36,7 @@ class Combobox(tk.Frame):
         self.columnconfigure(1, weight=1)
 
         self.values = values
-        self.current_value = tk.StringVar(self, values[0])
+        self.current_value = tk.StringVar(self, values[0] if default_value is None else default_value)
         self.current_value_label = LabelFactory.create(self, text=self.current_value, theme="white")
         self.current_value_label.grid(row=0, column=0, pady=8, padx=8, sticky="nsw")
 
@@ -106,6 +107,12 @@ class Combobox(tk.Frame):
             self.list_values_widget.bind('<Leave>', self.on_leave_list_of_values)
             self.list_values_widget.bind('<Enter>', self.on_enter_list_of_values)
             return
+
+        # Reposition the list of values
+        x, y, cx, cy = self.bbox()
+        x = x + self.winfo_rootx() - 1
+        y = y + cy + self.winfo_rooty() + 1
+        self.list_values_widget.wm_geometry("%dx%d+%d+%d" % (cx + 2, cy * len(self.values), x, y))
 
         # Display or hide list of values
         if self.list_values_widget.winfo_viewable():
