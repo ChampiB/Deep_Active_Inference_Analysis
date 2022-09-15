@@ -24,11 +24,8 @@ class ProjectRenamingFrame(tk.Frame):
         self.parent = parent
         self.assets = AnalysisAssets.instance
 
-        # Default project name
-        self.default_project_name = "<project name here>"
-
         # Place the project renaming frame in the center od the screen
-        self.place(relwidth=0.25, relheight=0.175, relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         # Place the project renaming frame in the center od the screen
         self.columnconfigure(0, weight=1)
@@ -51,28 +48,51 @@ class ProjectRenamingFrame(tk.Frame):
         self.new_project_name_label.grid(row=1, column=0, padx=(10, 0), pady=(5, 10), sticky="nsw")
 
         # Add the new project name entry
-        self.renaming_entry = Entry(self, help_message=self.default_project_name)
+        self.renaming_entry = Entry(self, help_message=self.parent.project_name)
         self.renaming_entry.grid(row=1, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
         self.renaming_entry.focus()
 
-        # Add the rename button
-        self.rename_button = ButtonFactory.create(self, text="Rename", command=self.change_project_name, theme="blue")
-        self.rename_button.grid(row=2, column=1, columnspan=2, pady=10, padx=(0, 10), ipady=10, sticky="nsew")
+        # Add the new project description label
+        self.new_description_label = LabelFactory.create(self, text="New project description:", theme="gray")
+        self.new_description_label.grid(row=2, column=0, padx=(10, 0), pady=(5, 10), sticky="nsw")
+
+        # Add the new project description entry
+        self.description_entry = Entry(self, help_message=self.parent.project_description)
+        self.description_entry.config(width=40)
+        self.description_entry.grid(row=2, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
+
+        # Add the update button
+        self.update_button = ButtonFactory.create(self, text="Update", command=self.change_project_name, theme="blue")
+        self.update_button.grid(row=3, column=1, columnspan=2, pady=10, padx=(0, 10), ipady=10, sticky="nsew")
 
     def change_project_name(self):
         """
         Change the project name
         """
-        # Check that the new project name is not empty
+        # Check that the new project name and description is not empty
         self.renaming_entry.remove_help_message()
+        self.description_entry.remove_help_message()
         new_project_name = self.renaming_entry.get()
-        if new_project_name == "":
+        new_project_description = self.description_entry.get()
+        if new_project_name == "" and new_project_description == "":
             self.place_forget()
             return
+        projects_directory = self.parent.conf.projects_directory
 
         # Change project name
-        projects_directory = self.parent.conf.projects_directory
-        self.parent.top_bar.name_label.config(text=new_project_name)
-        os.rename(projects_directory + self.parent.project_name, projects_directory + new_project_name)
-        self.parent.project_name = new_project_name
-        self.place_forget()
+        if new_project_name != "":
+            self.parent.top_bar.name_label.config(text=new_project_name)
+            os.rename(projects_directory + self.parent.project_name, projects_directory + new_project_name)
+            self.parent.project_name = new_project_name
+            self.place_forget()
+
+        # Change project description
+        if new_project_description != "":
+            self.parent.top_bar.description_tooltip.text = new_project_description
+            description_file = projects_directory + self.parent.project_name + "/description.txt"
+            try:
+                os.remove(description_file)
+            except OSError:
+                pass
+            file = open(description_file, "w+")
+            file.write(new_project_description)

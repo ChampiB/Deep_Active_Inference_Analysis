@@ -3,6 +3,7 @@ from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.Entry import Entry
 from gui.widgets.modern.LabelFactory import LabelFactory
+from gui.widgets.modern.ToolTip import ToolTip
 
 
 class LabelFrameFactory:
@@ -12,6 +13,11 @@ class LabelFrameFactory:
 
     conf = AnalysisConfig.instance
     strategies = conf.get_all_classes(conf.agents_directory + "strategies/", "agents.strategies.")
+    encoders = conf.get_all_classes(conf.agents_directory + "networks/EncoderNetworks.py", "agents.networks.")
+    decoders = conf.get_all_classes(conf.agents_directory + "networks/DecoderNetworks.py", "agents.networks.")
+    transitions = conf.get_all_classes(conf.agents_directory + "networks/TransitionNetworks.py", "agents.networks.")
+    critics = conf.get_all_classes(conf.agents_directory + "networks/CriticNetworks.py", "agents.networks.")
+    policies = conf.get_all_classes(conf.agents_directory + "networks/PolicyNetworks.py", "agents.networks.")
 
     @staticmethod
     def create(parent, text=None, theme="default", params=None):
@@ -27,6 +33,10 @@ class LabelFrameFactory:
             return LabelFrameFactory.create_default_label_frame(parent, text)
         if theme == "action_selection":
             return LabelFrameFactory.create_action_selection_label_frame(parent, text, params)
+        if theme == "networks":
+            return LabelFrameFactory.create_networks_label_frame(parent, text, params)
+        if theme == "hyper_parameters":
+            return LabelFrameFactory.create_hyper_parameters_label_frame(parent, text, params)
         raise NotImplementedError(f"LabelFrameFactory.create does not support theme: '{theme}'.")
 
     @staticmethod
@@ -44,6 +54,125 @@ class LabelFrameFactory:
             foreground=LabelFrameFactory.conf.colors["light_text"],
             font=(LabelFrameFactory.conf.font["name"], 14, LabelFrameFactory.conf.font["style"])
         )
+
+    @staticmethod
+    def create_hyper_parameters_label_frame(parent, text, params):
+        """
+        Create a hyper parameters label frame
+        :param parent: the parent widget
+        :param text: the text of the label frame
+        :param params: a dictionary containing the 'scrollbar' and (optionally) the 'default_value'
+        :return:
+        """
+        # Get the scrollbar
+        scrollbar = params["scrollbar"]
+
+        # Get the default values
+        default_values = {
+            "Discount factor:": ("entry", "discount_factor", "float"),
+            "Number of steps between synchronisation:": ("entry", "n_steps_between_synchro", "float"),
+            "Queue capacity:": ("entry", "queue_capacity", "int"),
+            "Q-network's learning rate:": ("entry", "q_network_lr", "float"),
+            "Beta:": ("entry", "beta", "float"),
+            "Variational free energy learning rate:": ("entry", "vfe_lr", "float"),
+            "Critic's learning rate:": ("entry", "critic_lr", "float"),
+            "Number of latent dimensions:": ("entry", "n_states", "int"),
+            "Critic's objective:": ("combobox", "critic_objective", ["Reward", "Expected Free Energy"])
+        }
+
+        # Create networks label frame
+        text = "Hyper-parameters" if text is None else text
+        label_frame = LabelFrameFactory.create(parent, text=text)
+        LabelFrameFactory.configure_columns(label_frame)
+        scrollbar.bind_wheel(label_frame)
+
+        # Create the label frame content
+        widgets = {}
+        row_index = 0
+        widget = None
+        label = None
+        for text, (widget_class, key, valid_input) in default_values.items():
+            # If no default value, then does not display the label and combobox
+            default_value = params.get(key, None)
+            if default_value is None:
+                continue
+
+            # Display the label
+            label = LabelFactory.create(label_frame, text=text, theme="dark")
+            label.grid(row=row_index, column=0, pady=5, padx=5, sticky="nse")
+            scrollbar.bind_wheel(label)
+
+            # Display the combobox
+            if widget_class == "entry":
+                widget = Entry(label_frame, valid_input=valid_input, help_message=default_value)
+            elif widget_class == "combobox":
+                widget = Combobox(label_frame, values=valid_input, default_value=default_value)
+            widget.grid(row=row_index, column=1, pady=5, padx=5, sticky="nsew")
+            widgets[key] = widget
+            scrollbar.bind_wheel(widget)
+
+            # Add tooltips
+            if key == "n_steps_between_synchro":
+                ToolTip(widget, "The synchronization is between the weights of the target and Q-network")
+
+            row_index += 1
+
+        # Reposition label and combobox
+        label.grid(row=row_index - 1, column=0, pady=(5, 15), padx=5, sticky="nse")
+        widget.grid(row=row_index - 1, column=1, pady=(5, 15), padx=5, sticky="nsew")
+        return label_frame, widgets
+
+    @staticmethod
+    def create_networks_label_frame(parent, text, params):
+        """
+        Create a networks label frame
+        :param parent: the parent widget
+        :param text: the text of the label frame
+        :param params: a dictionary containing the 'scrollbar' and (optionally) the 'x_default_value' where x is the
+        neural network name, i.e., encoder, decoder, transition, critic, policy.
+        :return:
+        """
+        # Get the scrollbar
+        scrollbar = params["scrollbar"]
+
+        # Get the default values
+        default_values = {
+            "Encoder:": ("encoder", LabelFrameFactory.encoders),
+            "Decoder:": ("decoder", LabelFrameFactory.decoders),
+            "Transition:": ("transition", LabelFrameFactory.transitions),
+            "Critic:": ("critic", LabelFrameFactory.critics),
+            "Q-network:": ("policy", LabelFrameFactory.policies)
+        }
+
+        # Create networks label frame
+        text = "Networks" if text is None else text
+        label_frame = LabelFrameFactory.create(parent, text=text)
+        LabelFrameFactory.configure_columns(label_frame)
+        scrollbar.bind_wheel(label_frame)
+
+        # Create the label frame content
+        row_index = 0
+        widgets = {}
+        combobox = None
+        for text, (key, values) in default_values.items():
+            # If no default value, then does not display the label and combobox
+            default_value = params.get(key, None)
+            if default_value is None:
+                continue
+
+            # Display the label
+            label = LabelFactory.create(label_frame, text=text, theme="dark")
+            label.grid(row=row_index, column=0, pady=5, padx=5, sticky="nse")
+            scrollbar.bind_wheel(label)
+
+            # Display the combobox
+            combobox = Combobox(label_frame, values=list(values.keys()), default_value=default_value)
+            widgets[key] = (combobox, values)
+            combobox.grid(row=row_index, column=1, pady=5, padx=5, sticky="nsew")
+            scrollbar.bind_wheel(combobox)
+            row_index += 1
+        combobox.grid(row=row_index - 1, column=1, pady=(5, 15), padx=5, sticky="nsew")
+        return label_frame, widgets
 
     @staticmethod
     def create_action_selection_label_frame(parent, text, params):

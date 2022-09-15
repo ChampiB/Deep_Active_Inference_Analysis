@@ -42,6 +42,7 @@ class TopBarFrame(tk.Frame):
             self.name_label = ButtonFactory.create(
                 self, text=parent.project_name, command=self.ask_new_project_name, font_size=12
             )
+            self.description_tooltip = ToolTip(self.name_label, text="")
             self.name_label.grid(row=0, column=col_index, padx=6, pady=6)
             col_index += 1
 
@@ -104,12 +105,14 @@ class TopBarFrame(tk.Frame):
         if self.project_renaming_frame is None or not self.project_renaming_frame.winfo_viewable():
             self.project_renaming_frame = ProjectRenamingFrame(self.parent)
 
-    def refresh(self, project):
+    def refresh(self, project, description=None):
         """
         Refresh the top bar of the analysis tool
         :param project: the project name to display
+        :param description: the project description
         """
         self.name_label.config(text=project)
+        self.description_tooltip.text = description
 
     def delete_selection(self):
         """

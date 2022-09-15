@@ -1,5 +1,3 @@
-1. TODO refacto creation of labelframe
-
 2. Display agent specifications on double click
 3. Display environments specifications on double click + allows the user to play the environment to get a feel of how it works
 

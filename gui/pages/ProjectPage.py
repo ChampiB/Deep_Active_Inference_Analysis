@@ -32,6 +32,7 @@ class ProjectPage(tk.Frame):
 
         # The current project being displayed
         self.project_name = 'Project Name'
+        self.project_description = 'The description of the project'
 
         # Create the top bar
         self.top_bar = TopBarFrame(self)
@@ -114,13 +115,22 @@ class ProjectPage(tk.Frame):
         Refresh the page
         :param project: the name of the project to load and display
         """
-        # Create a new project
         if project is None:
+            # Create a new project
             project = self.create_new_project()
+            description = ""
+        else:
+            # Load project description
+            try:
+                description_file = self.conf.projects_directory + project + "/description.txt"
+                file = open(description_file, "r+")
+                description = "\n".join(file.readlines())
+            except OSError:
+                description = ""
 
         # Update project name
-        self.top_bar.refresh(project)
         self.project_name = project
+        self.top_bar.refresh(project, description)
         self.tkraise()
 
         # Update project structure

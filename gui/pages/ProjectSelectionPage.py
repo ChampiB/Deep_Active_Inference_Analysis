@@ -1,5 +1,4 @@
 import shutil
-import os
 import tkinter as tk
 from gui.AnalysisAssets import AnalysisAssets
 from gui.AnalysisConfig import AnalysisConfig
