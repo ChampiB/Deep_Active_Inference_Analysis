@@ -99,6 +99,13 @@ class FormOpenAI(tk.Frame):
             # Get the environment file name
             file_name = env.replace("/", "_") + ".json"
 
+            # Check that the environment is valid
+            if not env.startswith("ALE/"):
+                env = f"ALE/{env}"
+            if env not in self.all_atari_games:
+                print(f"Environment '{env}' is not a valid Atari game.")
+                return
+
             # Check if the project exist or not
             target_file = envs_directories + file_name
             source_file = target_file if self.source_file is None else self.source_file

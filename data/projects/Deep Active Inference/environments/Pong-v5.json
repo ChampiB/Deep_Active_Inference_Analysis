@@ -1,5 +1,5 @@
 {
-  "name": "Pong_v5",
+  "name": "ALE/Pong-v5",
   "module": "environments.impl.OpenAI",
   "class": "OpenAI"
 }

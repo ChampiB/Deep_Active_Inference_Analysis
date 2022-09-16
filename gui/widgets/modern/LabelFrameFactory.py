@@ -182,8 +182,11 @@ class LabelFrameFactory:
         strategy_label = LabelFactory.create(label_frame, text="Strategy:", theme="dark")
         strategy_label.grid(row=0, column=0, pady=pad_y, padx=5, sticky="nse")
 
+        strategies = params.get("strategies", None)
+        if strategies is None:
+            strategies = list(LabelFrameFactory.strategies.keys())
         strategy_combobox = Combobox(
-            label_frame, values=list(LabelFrameFactory.strategies.keys()), default_value=strategy["class"],
+            label_frame, values=strategies, default_value=strategy["class"],
             command=lambda: LabelFrameFactory.display_action_selection_parameters(label_frame, strategy)
         )
         strategy_combobox.grid(row=0, column=1, pady=pad_y, padx=5, sticky="nsew")

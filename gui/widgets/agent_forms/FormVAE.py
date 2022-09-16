@@ -35,6 +35,7 @@ class FormVAE(tk.Frame):
         # Create action selection label frame
         self.action_selection = LabelFrameFactory.create(
             self, theme="action_selection", params={
+                "strategies": ["RandomActions"],
                 "strategy": {"class": "RandomActions"} if agent is None else agent["strategy"]
             }
         )

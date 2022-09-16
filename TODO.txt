@@ -1,6 +1,3 @@
-1. Make sure OpenAI env name is valid
-2. Make sure action selection strategy is valid e.g. vae => random action
-
 3. Allows the user to play the environment to get a feel of how it works (on double click)
 
 4. Allow the training of the agents on the environments (locally and on the cluster)
