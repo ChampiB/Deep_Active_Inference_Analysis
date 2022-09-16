@@ -2,28 +2,34 @@ import os
 import json
 import tkinter as tk
 from gui.AnalysisConfig import AnalysisConfig
+from gui.widgets.frames.EnvironmentFrame import EnvironmentFrame
 from gui.widgets.modern.ButtonFactory import ButtonFactory
 
 
-class CreationOpenAI(tk.Frame):
+class FormOpenAI(tk.Frame):
     """
     A creation form for an open AI gym environment
     """
 
-    def __init__(self, parent, scrollbar):
+    def __init__(self, parent, scrollbar, env, file):
         """
         Constructor
         :param parent: the parent widget
         :param scrollbar: the scrollbar widget allowing to scroll the creation form
+        :param env: the environment that must be displayed or None if a new environment must be created
+        :param file: the file of the environment that must be displayed or None if a new environment must be created
         """
         super().__init__(parent)
         self.conf = AnalysisConfig.instance
         self.config(background=self.conf.colors["dark_gray"])
         self.parent = parent.master.master
         self.project_page = self.parent.master.master.master.master
+        self.env = env
+        self.source_file = file
 
         # Create the create button
-        self.create_button = ButtonFactory.create(self, text="Create", theme="blue", command=self.create_open_ai_env)
+        text = "Create" if env is None else "Update"
+        self.create_button = ButtonFactory.create(self, text=text, theme="blue", command=self.create_open_ai_env)
         self.create_button.grid(row=0, column=0, pady=15, ipady=5, ipadx=5, sticky="nse")
         scrollbar.bind_wheel(self.create_button)
 
@@ -89,20 +95,22 @@ class CreationOpenAI(tk.Frame):
         envs = [env_name] if env_name.lower() != "all atari games" else self.all_atari_games
 
         # Get environment directory
-        environments_directories = self.conf.projects_directory + self.project_page.project_name + "/environments/"
+        envs_directories = self.conf.projects_directory + self.project_page.project_name + "/environments/"
 
         for env in envs:
 
             # Get the environment file name
             file_name = env.replace("/", "_") + ".json"
 
-            # Check that the project does not exist
-            if file_name in os.listdir(environments_directories):
-                print(f"Environment '{file_name}' already exist.")
-                continue
+            # Check if the project exist or not
+            target_file = envs_directories + file_name
+            source_file = target_file if self.source_file is None else self.source_file
+            env_creation = self.source_file is None
+            if not EnvironmentFrame.can_update_be_performed(envs_directories, source_file, target_file, env_creation):
+                return
 
             # Write the description of the new agent on the filesystem
-            file = open(environments_directories + file_name, "a")
+            file = open(target_file, "a")
             json.dump({
                 "name": env,
                 "module": "environments.impl.OpenAI",
@@ -112,3 +120,10 @@ class CreationOpenAI(tk.Frame):
         # Refresh project tree and display empty frame in the project page
         self.project_page.project_tree.refresh(self.project_page.project_name)
         self.project_page.show_frame("EmptyFrame")
+
+    def refresh(self):
+        """
+        Refresh the OpenAI form
+        """
+        text = "Create" if self.env is None else "Update"
+        self.create_button.config(text=text)

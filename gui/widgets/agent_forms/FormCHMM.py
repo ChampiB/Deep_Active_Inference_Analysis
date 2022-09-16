@@ -1,31 +1,30 @@
 import json
-import os
 import tkinter as tk
 from gui.AnalysisConfig import AnalysisConfig
+from gui.widgets.frames.AgentFrame import AgentFrame
 from gui.widgets.modern.ButtonFactory import ButtonFactory
-from gui.widgets.modern.Combobox import Combobox
-from gui.widgets.modern.Entry import Entry
-from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.LabelFrameFactory import LabelFrameFactory
-from gui.widgets.modern.ToolTip import ToolTip
 
 
-class CreationCHMM(tk.Frame):
+class FormCHMM(tk.Frame):
     """
     A Critical Hidden Markov Model creation form
     """
 
-    def __init__(self, parent, scrollbar):
+    def __init__(self, parent, scrollbar, agent, file):
         """
         Constructor
         :param parent: the parent widget
         :param scrollbar: the scrollbar widget allowing to scroll the creation form
+        :param agent: the agent that must be displayed or None if a new agent must be created
+        :param file: the file of the agent that must be displayed or None if a new agent must be created
         """
         super().__init__(parent)
         self.conf = AnalysisConfig.instance
         self.config(background=self.conf.colors["dark_gray"])
         self.parent = parent.master.master
         self.project_page = self.parent.master.master.master.master
+        self.source_file = file
 
         # Create network label frame
         self.networks, self.networks_values = LabelFrameFactory.create(self, theme="networks", params={
@@ -61,7 +60,8 @@ class CreationCHMM(tk.Frame):
         self.hyper_parameters.grid(row=2, column=0, padx=5, pady=15, sticky="nsew")
 
         # Create the create button
-        self.create_button = ButtonFactory.create(self, text="Create", theme="blue", command=self.create_dqn)
+        text = "Create" if agent is None else "Update"
+        self.create_button = ButtonFactory.create(self, text=text, theme="blue", command=self.create_dqn)
         self.create_button.grid(row=3, column=0, pady=15, ipady=5, ipadx=5, sticky="nse")
         scrollbar.bind_wheel(self.create_button)
 
@@ -82,9 +82,11 @@ class CreationCHMM(tk.Frame):
         agents_directories = self.conf.projects_directory + self.project_page.project_name + "/agents/"
         file_name = self.parent.agent_name_entry.get() + ".json"
 
-        # Check that the project does not exist
-        if file_name in os.listdir(agents_directories):
-            print(f"Agent '{file_name}' already exist.")
+        # Check if the project exist or not
+        target_file = agents_directories + file_name
+        source_file = target_file if self.source_file is None else self.source_file
+        agent_creation = self.source_file is None
+        if not AgentFrame.can_update_be_performed(agents_directories, source_file, target_file, agent_creation):
             return
 
         # Write the description of the new agent on the filesystem
@@ -93,7 +95,6 @@ class CreationCHMM(tk.Frame):
         networks = {
             key: {"module": str(value.__module__), "class": str(value.__name__)} for key, value in networks.items()
         }
-        strategy = LabelFrameFactory.get_strategy(self.action_selection)
         hp_values = {key: value.get() for key, value in self.hyper_parameters_values.items()}
         strategy = LabelFrameFactory.get_strategy(self.action_selection)
         json.dump({
@@ -108,3 +109,7 @@ class CreationCHMM(tk.Frame):
         # Refresh project tree and display empty frame in the project page
         self.project_page.project_tree.refresh(self.project_page.project_name)
         self.project_page.show_frame("EmptyFrame")
+
+    def refresh(self):
+        text = "Create" if self.source_file is None else "Update"
+        self.create_button.config(text=text)

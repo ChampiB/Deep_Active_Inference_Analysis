@@ -133,6 +133,17 @@ class Combobox(tk.Frame):
             if self.command is not None:
                 self.command()
 
+    def lock(self):
+        """
+        Lock the value of the combobox
+        """
+        # Change background color
+        self.config(background=self.conf.colors["light_text"], highlightthickness=1)
+        self.current_value_label.config(background=self.conf.colors["light_text"])
+
+        # Do nothing when button is clicked
+        self.change_value_button.config(command=lambda x=self: x, background=self.conf.colors["light_text"])
+
     def get(self):
         """
         Getter

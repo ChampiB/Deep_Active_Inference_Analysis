@@ -70,7 +70,7 @@ class LabelFrameFactory:
         # Get the default values
         default_values = {
             "Discount factor:": ("entry", "discount_factor", "float"),
-            "Number of steps between synchronisation:": ("entry", "n_steps_between_synchro", "float"),
+            "Number of steps between synchronisation:": ("entry", "n_steps_between_synchro", "int"),
             "Queue capacity:": ("entry", "queue_capacity", "int"),
             "Q-network's learning rate:": ("entry", "q_network_lr", "float"),
             "Beta:": ("entry", "beta", "float"),
@@ -113,7 +113,7 @@ class LabelFrameFactory:
 
             # Add tooltips
             if key == "n_steps_between_synchro":
-                ToolTip(widget, "The synchronization is between the weights of the target and Q-network")
+                ToolTip(label, "The synchronization is between the weights of the target and Q-network")
 
             row_index += 1
 
@@ -187,8 +187,8 @@ class LabelFrameFactory:
         scrollbar = params["scrollbar"]
 
         # Get default value and pad y
-        default_value = params.get("default_value", "EpsilonGreedy")
-        pad_y = 5 if default_value in ["EpsilonGreedy", "SoftmaxSampling"] else (5, 15)
+        strategy = params.get("strategy", {"class": "RandomActions"})
+        pad_y = 5 if strategy["class"] in ["EpsilonGreedy", "SoftmaxSampling"] else (5, 15)
 
         # Create action selection label frame
         text = "Action Selection" if text is None else text
@@ -201,34 +201,32 @@ class LabelFrameFactory:
         scrollbar.bind_wheel(strategy_label)
 
         strategy_combobox = Combobox(
-            label_frame, values=list(LabelFrameFactory.strategies.keys()), default_value=default_value,
-            command=lambda: LabelFrameFactory.display_action_selection_parameters(label_frame, scrollbar)
+            label_frame, values=list(LabelFrameFactory.strategies.keys()), default_value=strategy["class"],
+            command=lambda: LabelFrameFactory.display_action_selection_parameters(label_frame, scrollbar, strategy)
         )
         strategy_combobox.grid(row=0, column=1, pady=pad_y, padx=5, sticky="nsew")
         scrollbar.bind_wheel(strategy_combobox)
-        LabelFrameFactory.display_action_selection_parameters(label_frame, scrollbar)
+        LabelFrameFactory.display_action_selection_parameters(label_frame, scrollbar, strategy)
         return label_frame
 
     @staticmethod
-    def display_action_selection_parameters(label_frame, scrollbar):
+    def display_action_selection_parameters(label_frame, scrollbar, strategy):
         """
         Display the action selection parameters
         :param label_frame: the (action selection) label frame
         :param scrollbar: the scrollbar
+        :param strategy: the action selection strategy
         """
         # Remove old selection parameters
-        row = 0
-        combobox = label_frame.grid_slaves(row, 1)[0]
         for slave in label_frame.grid_slaves():
-            row = slave.grid_info()["row"]
-            if row >= 1:
+            if slave.grid_info()["row"] >= 1:
                 slave.grid_remove()
 
         # Set small y padding
-        label = label_frame.grid_slaves(row, 0)[0]
+        label = label_frame.grid_slaves(0, 0)[0]
         label.grid(row=0, column=0, pady=5, sticky="nse")
-        cb = label_frame.grid_slaves(row, 1)[0]
-        cb.grid(row=0, column=1, pady=5, padx=5, sticky="nsew")
+        combobox = label_frame.grid_slaves(0, 1)[0]
+        combobox.grid(row=0, column=1, pady=5, padx=5, sticky="nsew")
 
         # Remove new selection parameters
         if combobox.get() == "EpsilonGreedy":
@@ -237,7 +235,8 @@ class LabelFrameFactory:
             epsilon_start_label.grid(row=1, column=0, pady=5, padx=5, sticky="nse")
             scrollbar.bind_wheel(epsilon_start_label)
 
-            epsilon_start_entry = Entry(label_frame, valid_input="float", help_message="0.9")
+            default_val = strategy.get("epsilon_start", "0.9")
+            epsilon_start_entry = Entry(label_frame, valid_input="float", help_message=default_val)
             epsilon_start_entry.grid(row=1, column=1, pady=5, padx=5, sticky="nsew")
             scrollbar.bind_wheel(epsilon_start_entry)
 
@@ -246,7 +245,8 @@ class LabelFrameFactory:
             epsilon_end_label.grid(row=2, column=0, pady=5, padx=5, sticky="nse")
             scrollbar.bind_wheel(epsilon_end_label)
 
-            epsilon_end_entry = Entry(label_frame, valid_input="float", help_message="0.05")
+            default_val = strategy.get("epsilon_end", "0.05")
+            epsilon_end_entry = Entry(label_frame, valid_input="float", help_message=default_val)
             epsilon_end_entry.grid(row=2, column=1, pady=5, padx=5, sticky="nsew")
             scrollbar.bind_wheel(epsilon_end_entry)
 
@@ -255,7 +255,8 @@ class LabelFrameFactory:
             epsilon_decay_label.grid(row=3, column=0, pady=(5, 15), padx=5, sticky="nse")
             scrollbar.bind_wheel(epsilon_decay_label)
 
-            epsilon_decay_entry = Entry(label_frame, valid_input="int", help_message="1000")
+            default_val = strategy.get("epsilon_decay", "1000")
+            epsilon_decay_entry = Entry(label_frame, valid_input="int", help_message=default_val)
             epsilon_decay_entry.grid(row=3, column=1, pady=(5, 15), padx=5, sticky="nsew")
             scrollbar.bind_wheel(epsilon_decay_entry)
         elif combobox.get() == "SoftmaxSampling":
@@ -264,15 +265,22 @@ class LabelFrameFactory:
             gain_param_label.grid(row=1, column=0, pady=(5, 15), padx=5, sticky="nse")
             scrollbar.bind_wheel(gain_param_label)
 
-            gain_param_entry = Entry(label_frame, valid_input="float", help_message="1.0")
+            default_val = strategy.get("gain", "1")
+            gain_param_entry = Entry(label_frame, valid_input="float", help_message=default_val)
             gain_param_entry.grid(row=1, column=1, pady=(5, 15), padx=5, sticky="nsew")
             scrollbar.bind_wheel(gain_param_entry)
         else:
             # Set large y padding
-            label = label_frame.grid_slaves(row, 0)[0]
+            label = label_frame.grid_slaves(0, 0)[0]
             label.grid(row=0, column=0, pady=(5, 15), sticky="nse")
-            combobox = label_frame.grid_slaves(row, 1)[0]
+            combobox = label_frame.grid_slaves(0, 1)[0]
             combobox.grid(row=0, column=1, pady=(5, 15), padx=5, sticky="nsew")
+
+        # Update agent form idle tasks to let tkinter calculate buttons sizes
+        agent_form = label_frame.master
+        agent_form.update_idletasks()
+        canvas = agent_form.master.master.master.canvas
+        canvas.config(scrollregion=canvas.bbox("all"))
 
     @staticmethod
     def configure_columns(widget):

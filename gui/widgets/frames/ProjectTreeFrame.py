@@ -1,6 +1,5 @@
 import tkinter as tk
 from threading import Timer
-
 from gui.AnalysisAssets import AnalysisAssets
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.ButtonFactory import ButtonFactory
@@ -36,7 +35,6 @@ class ProjectTreeFrame(tk.Frame):
         self.assets = AnalysisAssets.instance
         self.parent = parent.master.master
 
-        self.projects_directory = self.conf.projects_directory
         self.current_index = 0
 
         self.selected_entries = []
@@ -163,7 +161,7 @@ class ProjectTreeFrame(tk.Frame):
         """
         button = ButtonFactory.create(
             self.canvas_frame, image=self.assets.get("new_button", subsample=17), theme="light",
-            command=lambda n="NewAgentFrame": self.parent.show_frame(n)
+            command=lambda n="AgentFrame": self.parent.show_frame(n)
         )
         button.grid(row=self.current_index, column=1, sticky="w", pady=(0, 3), padx=(15, 3))
         self.scrollbar.bind_wheel(button)
@@ -180,7 +178,7 @@ class ProjectTreeFrame(tk.Frame):
         """
         button = ButtonFactory.create(
             self.canvas_frame, image=self.assets.get("new_button", subsample=17), theme="light",
-            command=lambda n="NewEnvironmentFrame": self.parent.show_frame(n)
+            command=lambda n="EnvironmentFrame": self.parent.show_frame(n)
         )
         button.grid(row=self.current_index, column=1, sticky="w", pady=(0, 3), padx=(15, 3))
         self.scrollbar.bind_wheel(button)
@@ -205,10 +203,10 @@ class ProjectTreeFrame(tk.Frame):
         self.selected_entries = []
 
         # Load new agents and environments
-        agents = self.conf.get_all_files(self.projects_directory + project + "/agents/")
+        agents = self.conf.get_all_files(self.conf.projects_directory + project + "/agents/")
         expanded = self.directories["Agents"][0] if "Agents" in self.directories.keys() else True
         self.directories["Agents"] = (expanded, agents)
-        environments = self.conf.get_all_files(self.projects_directory + project + "/environments/")
+        environments = self.conf.get_all_files(self.conf.projects_directory + project + "/environments/")
         expanded = self.directories["Environments"][0] if "Environments" in self.directories.keys() else True
         self.directories["Environments"] = (expanded, environments)
 
@@ -232,6 +230,9 @@ class ProjectTreeFrame(tk.Frame):
         self.parent.show_frame("EmptyFrame")
 
     def set_panned_window_width(self):
+        """
+        Set the width of the panned window to make sure the first slash makes just enough space for the project tree
+        """
         width = self.canvas_frame.winfo_width() + 15
         if self.scrollbar.is_hidden():
             width -= 15
@@ -244,4 +245,9 @@ class ProjectTreeFrame(tk.Frame):
         :param directory: the directory whose details should be displayed
         :param file: the file whose details should be displayed
         """
-        print(f"display_details({directory}, {file})")  # TODO
+        if directory == "Agents":
+            self.parent.show_frame("AgentFrame", file)
+        elif directory == "Environments":
+            self.parent.show_frame("EnvironmentFrame", file)
+        else:
+            print(f"In ProjectTreeFrame.display_details, the directory {directory} is not supported.")

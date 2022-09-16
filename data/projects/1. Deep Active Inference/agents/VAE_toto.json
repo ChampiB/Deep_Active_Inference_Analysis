@@ -1,0 +1,24 @@
+{
+  "name": "VAE_toto",
+  "module": "agents.impl.VAE",
+  "class": "VAE",
+  "encoder": {
+    "module": "agents.networks.EncoderNetworks",
+    "class": "ConvDAIMC"
+  },
+  "decoder": {
+    "module": "agents.networks.DecoderNetworks",
+    "class": "ConvDAIMC"
+  },
+  "strategy": {
+    "module": "agents.strategies.EpsilonGreedy",
+    "class": "EpsilonGreedy",
+    "epsilon_start": "1",
+    "epsilon_end": "0",
+    "epsilon_decay": "200"
+  },
+  "queue_capacity": "10000",
+  "beta": "0.5",
+  "vfe_lr": "0.1",
+  "n_states": "12"
+}

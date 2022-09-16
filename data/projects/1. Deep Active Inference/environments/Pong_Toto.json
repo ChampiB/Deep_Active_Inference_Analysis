@@ -1,0 +1,5 @@
+{
+  "name": "Pong_Toto",
+  "module": "environments.impl.OpenAI",
+  "class": "OpenAI"
+}

@@ -62,14 +62,14 @@ class ProjectPage(tk.Frame):
         self.frames = {}
         self.current_frame = None
 
-    def show_frame(self, frame_name):
+    def show_frame(self, frame_name, file=None):
         """
         Show the frame corresponding to the name passed as parameters
         :param frame_name: the name of the page to display
+        :param file: the file whose content must be displayed, or None if non-applicable
         """
-        # Construct the frame if it does not already exist
-        if frame_name not in self.frames.keys():
-            self.frames[frame_name] = self.frames_class[frame_name](parent=self.information)
+        # Construct the frame if it does not already exist and change frame's file if it does
+        self.frames[frame_name] = self.frames_class[frame_name](parent=self.information, file=file)
 
         # Hide the currently displayed page
         if self.current_frame is not None:

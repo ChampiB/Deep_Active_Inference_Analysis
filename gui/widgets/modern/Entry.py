@@ -42,7 +42,6 @@ class Entry(ttk.Entry):
         # Write help message and bind related function
         self.help_message = help_message
         self.insert(tk.END, help_message)
-        self.bind("<Key>", self.remove_help_message)
         self.bind("<Button-1>", self.remove_help_message)
 
     def is_valid_int(self, value):

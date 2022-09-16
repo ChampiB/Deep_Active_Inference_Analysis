@@ -7,10 +7,11 @@ class EmptyFrame(tk.Frame):
     A class representing an empty frame
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, file=None):
         """
         Constructor
         :param parent: the parent widget
+        :param file: unused
         """
 
         # Call parent constructor

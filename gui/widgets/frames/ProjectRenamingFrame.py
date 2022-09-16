@@ -50,7 +50,6 @@ class ProjectRenamingFrame(tk.Frame):
         # Add the new project name entry
         self.renaming_entry = Entry(self, help_message=self.parent.project_name)
         self.renaming_entry.grid(row=1, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
-        self.renaming_entry.focus()
 
         # Add the new project description label
         self.new_description_label = LabelFactory.create(self, text="New project description:", theme="gray")
