@@ -1,5 +1,5 @@
 {
-  "name": "CHMM[reward]",
+  "name": "CHMM[efe]",
   "module": "agents.impl.CHMM",
   "class": "CHMM",
   "encoder": {
@@ -26,11 +26,11 @@
     "epsilon_decay": "1000"
   },
   "discount_factor": "0.9",
-  "beta": "1.0",
+  "n_steps_between_synchro": "10",
   "queue_capacity": "50000",
-  "n_steps_between_synchro": "1.0",
+  "beta": "1.0",
   "vfe_lr": "0.0001",
   "critic_lr": "0.0001",
-  "critic_objective": "Reward",
-  "n_states": "10"
+  "n_states": "10",
+  "critic_objective": "Expected Free Energy"
 }

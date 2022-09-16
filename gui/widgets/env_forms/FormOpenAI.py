@@ -1,4 +1,3 @@
-import os
 import json
 import tkinter as tk
 from gui.AnalysisConfig import AnalysisConfig
@@ -11,11 +10,10 @@ class FormOpenAI(tk.Frame):
     A creation form for an open AI gym environment
     """
 
-    def __init__(self, parent, scrollbar, env, file):
+    def __init__(self, parent, env, file):
         """
         Constructor
         :param parent: the parent widget
-        :param scrollbar: the scrollbar widget allowing to scroll the creation form
         :param env: the environment that must be displayed or None if a new environment must be created
         :param file: the file of the environment that must be displayed or None if a new environment must be created
         """
@@ -31,7 +29,6 @@ class FormOpenAI(tk.Frame):
         text = "Create" if env is None else "Update"
         self.create_button = ButtonFactory.create(self, text=text, theme="blue", command=self.create_open_ai_env)
         self.create_button.grid(row=0, column=0, pady=15, ipady=5, ipadx=5, sticky="nse")
-        scrollbar.bind_wheel(self.create_button)
 
         # Store list of all atari games
         self.all_atari_games = [

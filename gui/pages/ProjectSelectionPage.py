@@ -85,7 +85,6 @@ class ProjectSelectionPage(tk.Frame):
         # Create a frame containing the buttons
         self.frame_buttons = tk.Frame(self.canvas, bg=self.conf.colors["dark_gray"])
         self.canvas.create_window(0, 0, window=self.frame_buttons, anchor='nw')
-        self.scrollbar.bind_wheel(self.frame_buttons)
 
         self.projects = None
         self.buttons = {}  # {key: (project_button, delete_button)}
@@ -149,7 +148,6 @@ class ProjectSelectionPage(tk.Frame):
                 image=self.assets.get("existing_project_button"), text=self.truncate(text, 20),
                 command=lambda n=page_name: self.window.show_page(n, {"project": self.projects[index]})
             )
-        self.scrollbar.bind_wheel(button)
         return button
 
     def get_delete_button(self, index):
@@ -165,16 +163,12 @@ class ProjectSelectionPage(tk.Frame):
 
         # Create the button
         if index == len(self.projects):
-            button = ButtonFactory.create(self.frame_buttons, theme="invisible_dark")
-            self.scrollbar.bind_wheel(button)
-            return button
+            return ButtonFactory.create(self.frame_buttons, theme="invisible_dark")
 
-        button = ButtonFactory.create(
+        return ButtonFactory.create(
             self.frame_buttons, image=self.assets.get("delete_button"), theme="red",
             command=lambda i=index: self.delete_project(self.projects[i])
         )
-        self.scrollbar.bind_wheel(button)
-        return button
 
     def delete_project(self, project_name):
         """
@@ -217,3 +211,6 @@ class ProjectSelectionPage(tk.Frame):
 
         # Set the canvas scrolling region
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
+
+        # Allow scrolling on all children widgets of the button frame
+        self.scrollbar.bind_wheel(self.frame_buttons, recursive=True)

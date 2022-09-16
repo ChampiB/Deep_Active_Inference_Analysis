@@ -1,0 +1,18 @@
+{
+  "name": "DQN",
+  "module": "agents.impl.DQN",
+  "class": "DQN",
+  "policy": {
+    "module": "agents.networks.PolicyNetworks",
+    "class": "Conv64"
+  },
+  "strategy": {
+    "module": "agents.strategies.SoftmaxSampling",
+    "class": "SoftmaxSampling",
+    "gain": "1"
+  },
+  "discount_factor": "0.9",
+  "n_steps_between_synchro": "10",
+  "queue_capacity": "50000",
+  "q_network_lr": "0.0001"
+}

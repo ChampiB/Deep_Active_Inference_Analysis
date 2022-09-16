@@ -1,5 +1,5 @@
 {
-  "name": "Toto_v3",
+  "name": "EpistemicSprites",
   "module": "environments.impl.SpritesEnvironment",
   "class": "SpritesEnvironment",
   "difficulty": "Hard",

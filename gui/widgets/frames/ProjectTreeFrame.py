@@ -49,14 +49,14 @@ class ProjectTreeFrame(tk.Frame):
         self.scrollbar = Scrollbar(self, command=self.canvas.yview)
         self.scrollbar.grid(row=0, column=1, sticky='nes')
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.bind_wheel(self)
-        self.scrollbar.bind_wheel(self.canvas)
 
         # Create the canvas frame
         self.canvas_frame = tk.Frame(self.canvas, background=self.conf.colors["gray"])
         self.canvas_frame.columnconfigure(0, weight=1)
         self.canvas_frame_window = self.canvas.create_window(0, 0, window=self.canvas_frame, anchor='nw')
-        self.scrollbar.bind_wheel(self.canvas_frame)
+
+        # Allow scrolling on all children widgets
+        self.scrollbar.bind_wheel(self, recursive=True)
 
     def add_entry(self, entry_name, tag, leaf_node=True, expanded=True, command=None):
         """
@@ -77,7 +77,6 @@ class ProjectTreeFrame(tk.Frame):
             button = ButtonFactory.create(self.canvas_frame, image=img, theme="light")
             button.config(command=lambda n=entry_name, b=button: self.expand_or_hide_directory(n, b))
             button.grid(row=self.current_index, column=col_index, sticky="w", pady=3, padx=3, ipady=3, ipadx=3)
-            self.scrollbar.bind_wheel(button)
             self.widgets[tag].append(button)
         col_index += 1
 
@@ -86,7 +85,6 @@ class ProjectTreeFrame(tk.Frame):
         label = LabelFactory.create(self.canvas_frame, image=img, text="  " + entry_name, theme="gray")
         internal_pad_x = 20 if leaf_node else 3
         label.grid(row=self.current_index, column=col_index, sticky="w", pady=3, padx=3, ipady=3, ipadx=internal_pad_x)
-        self.scrollbar.bind_wheel(label)
         if command is not None:
             label.bind('<Double-Button-1>', command)
         self.widgets[tag].append(label)
@@ -100,7 +98,6 @@ class ProjectTreeFrame(tk.Frame):
                 command=lambda f=entry_name, d=tag: self.update_selected_entries(checkbox_var, f, d)
             )
             checkbox.grid(row=self.current_index, column=col_index, sticky="e", pady=3, padx=(3, 10), ipady=3, ipadx=3)
-            self.scrollbar.bind_wheel(checkbox)
             self.columnconfigure(col_index, weight=1)
             self.widgets[tag].append(checkbox)
             col_index += 1
@@ -164,7 +161,6 @@ class ProjectTreeFrame(tk.Frame):
             command=lambda n="AgentFrame": self.parent.show_frame(n)
         )
         button.grid(row=self.current_index, column=1, sticky="w", pady=(0, 3), padx=(15, 3))
-        self.scrollbar.bind_wheel(button)
         ToolTip(button, f"Create a new agent")
         if tag not in self.widgets.keys():
             self.widgets[tag] = [button]
@@ -181,7 +177,6 @@ class ProjectTreeFrame(tk.Frame):
             command=lambda n="EnvironmentFrame": self.parent.show_frame(n)
         )
         button.grid(row=self.current_index, column=1, sticky="w", pady=(0, 3), padx=(15, 3))
-        self.scrollbar.bind_wheel(button)
         ToolTip(button, f"Create a new environment")
         if tag not in self.widgets.keys():
             self.widgets[tag] = [button]
@@ -222,6 +217,9 @@ class ProjectTreeFrame(tk.Frame):
 
         # Set the canvas scrolling region
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
+
+        # Allow scrolling on all children widgets
+        self.scrollbar.bind_wheel(self, recursive=True)
 
         # Change width of first column in PannedWindow
         Timer(0.1, self.set_panned_window_width).start()

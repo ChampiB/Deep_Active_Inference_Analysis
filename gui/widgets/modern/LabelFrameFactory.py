@@ -61,12 +61,9 @@ class LabelFrameFactory:
         Create a hyper parameters label frame
         :param parent: the parent widget
         :param text: the text of the label frame
-        :param params: a dictionary containing the 'scrollbar' and (optionally) the 'default_value'
+        :param params: a dictionary containing the default values
         :return:
         """
-        # Get the scrollbar
-        scrollbar = params["scrollbar"]
-
         # Get the default values
         default_values = {
             "Discount factor:": ("entry", "discount_factor", "float"),
@@ -84,7 +81,6 @@ class LabelFrameFactory:
         text = "Hyper-parameters" if text is None else text
         label_frame = LabelFrameFactory.create(parent, text=text)
         LabelFrameFactory.configure_columns(label_frame)
-        scrollbar.bind_wheel(label_frame)
 
         # Create the label frame content
         widgets = {}
@@ -100,7 +96,6 @@ class LabelFrameFactory:
             # Display the label
             label = LabelFactory.create(label_frame, text=text, theme="dark")
             label.grid(row=row_index, column=0, pady=5, padx=5, sticky="nse")
-            scrollbar.bind_wheel(label)
 
             # Display the combobox
             if widget_class == "entry":
@@ -109,7 +104,6 @@ class LabelFrameFactory:
                 widget = Combobox(label_frame, values=valid_input, default_value=default_value)
             widget.grid(row=row_index, column=1, pady=5, padx=5, sticky="nsew")
             widgets[key] = widget
-            scrollbar.bind_wheel(widget)
 
             # Add tooltips
             if key == "n_steps_between_synchro":
@@ -128,13 +122,9 @@ class LabelFrameFactory:
         Create a networks label frame
         :param parent: the parent widget
         :param text: the text of the label frame
-        :param params: a dictionary containing the 'scrollbar' and (optionally) the 'x_default_value' where x is the
-        neural network name, i.e., encoder, decoder, transition, critic, policy.
+        :param params: a dictionary containing the default values
         :return:
         """
-        # Get the scrollbar
-        scrollbar = params["scrollbar"]
-
         # Get the default values
         default_values = {
             "Encoder:": ("encoder", LabelFrameFactory.encoders),
@@ -148,7 +138,6 @@ class LabelFrameFactory:
         text = "Networks" if text is None else text
         label_frame = LabelFrameFactory.create(parent, text=text)
         LabelFrameFactory.configure_columns(label_frame)
-        scrollbar.bind_wheel(label_frame)
 
         # Create the label frame content
         row_index = 0
@@ -163,13 +152,11 @@ class LabelFrameFactory:
             # Display the label
             label = LabelFactory.create(label_frame, text=text, theme="dark")
             label.grid(row=row_index, column=0, pady=5, padx=5, sticky="nse")
-            scrollbar.bind_wheel(label)
 
             # Display the combobox
             combobox = Combobox(label_frame, values=list(values.keys()), default_value=default_value)
             widgets[key] = (combobox, values)
             combobox.grid(row=row_index, column=1, pady=5, padx=5, sticky="nsew")
-            scrollbar.bind_wheel(combobox)
             row_index += 1
         combobox.grid(row=row_index - 1, column=1, pady=(5, 15), padx=5, sticky="nsew")
         return label_frame, widgets
@@ -180,12 +167,9 @@ class LabelFrameFactory:
         Create an action selection label frame
         :param parent: the parent widget
         :param text: the text of the label frame
-        :param params: a dictionary containing the 'scrollbar' and (optionally) the 'default_value'
+        :param params: a dictionary containing the default values
         :return:
         """
-        # Get the scrollbar
-        scrollbar = params["scrollbar"]
-
         # Get default value and pad y
         strategy = params.get("strategy", {"class": "RandomActions"})
         pad_y = 5 if strategy["class"] in ["EpsilonGreedy", "SoftmaxSampling"] else (5, 15)
@@ -194,27 +178,23 @@ class LabelFrameFactory:
         text = "Action Selection" if text is None else text
         label_frame = LabelFrameFactory.create(parent, text=text)
         LabelFrameFactory.configure_columns(label_frame)
-        scrollbar.bind_wheel(label_frame)
 
         strategy_label = LabelFactory.create(label_frame, text="Strategy:", theme="dark")
         strategy_label.grid(row=0, column=0, pady=pad_y, padx=5, sticky="nse")
-        scrollbar.bind_wheel(strategy_label)
 
         strategy_combobox = Combobox(
             label_frame, values=list(LabelFrameFactory.strategies.keys()), default_value=strategy["class"],
-            command=lambda: LabelFrameFactory.display_action_selection_parameters(label_frame, scrollbar, strategy)
+            command=lambda: LabelFrameFactory.display_action_selection_parameters(label_frame, strategy)
         )
         strategy_combobox.grid(row=0, column=1, pady=pad_y, padx=5, sticky="nsew")
-        scrollbar.bind_wheel(strategy_combobox)
-        LabelFrameFactory.display_action_selection_parameters(label_frame, scrollbar, strategy)
+        LabelFrameFactory.display_action_selection_parameters(label_frame, strategy)
         return label_frame
 
     @staticmethod
-    def display_action_selection_parameters(label_frame, scrollbar, strategy):
+    def display_action_selection_parameters(label_frame, strategy):
         """
         Display the action selection parameters
         :param label_frame: the (action selection) label frame
-        :param scrollbar: the scrollbar
         :param strategy: the action selection strategy
         """
         # Remove old selection parameters
@@ -233,42 +213,34 @@ class LabelFrameFactory:
             # Add epsilon start value
             epsilon_start_label = LabelFactory.create(label_frame, text="Epsilon start value:", theme="dark")
             epsilon_start_label.grid(row=1, column=0, pady=5, padx=5, sticky="nse")
-            scrollbar.bind_wheel(epsilon_start_label)
 
             default_val = strategy.get("epsilon_start", "0.9")
             epsilon_start_entry = Entry(label_frame, valid_input="float", help_message=default_val)
             epsilon_start_entry.grid(row=1, column=1, pady=5, padx=5, sticky="nsew")
-            scrollbar.bind_wheel(epsilon_start_entry)
 
             # Add epsilon end value
             epsilon_end_label = LabelFactory.create(label_frame, text="Epsilon end value:", theme="dark")
             epsilon_end_label.grid(row=2, column=0, pady=5, padx=5, sticky="nse")
-            scrollbar.bind_wheel(epsilon_end_label)
 
             default_val = strategy.get("epsilon_end", "0.05")
             epsilon_end_entry = Entry(label_frame, valid_input="float", help_message=default_val)
             epsilon_end_entry.grid(row=2, column=1, pady=5, padx=5, sticky="nsew")
-            scrollbar.bind_wheel(epsilon_end_entry)
 
             # Add epsilon decay value
             epsilon_decay_label = LabelFactory.create(label_frame, text="Epsilon decay:", theme="dark")
             epsilon_decay_label.grid(row=3, column=0, pady=(5, 15), padx=5, sticky="nse")
-            scrollbar.bind_wheel(epsilon_decay_label)
 
             default_val = strategy.get("epsilon_decay", "1000")
             epsilon_decay_entry = Entry(label_frame, valid_input="int", help_message=default_val)
             epsilon_decay_entry.grid(row=3, column=1, pady=(5, 15), padx=5, sticky="nsew")
-            scrollbar.bind_wheel(epsilon_decay_entry)
         elif combobox.get() == "SoftmaxSampling":
             # Add the gain
             gain_param_label = LabelFactory.create(label_frame, text="Gain parameter:", theme="dark")
             gain_param_label.grid(row=1, column=0, pady=(5, 15), padx=5, sticky="nse")
-            scrollbar.bind_wheel(gain_param_label)
 
             default_val = strategy.get("gain", "1")
             gain_param_entry = Entry(label_frame, valid_input="float", help_message=default_val)
             gain_param_entry.grid(row=1, column=1, pady=(5, 15), padx=5, sticky="nsew")
-            scrollbar.bind_wheel(gain_param_entry)
         else:
             # Set large y padding
             label = label_frame.grid_slaves(0, 0)[0]

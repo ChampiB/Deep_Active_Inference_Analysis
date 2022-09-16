@@ -58,16 +58,22 @@ class Scrollbar(tk.Canvas):
 
         self.bind_wheel(self)
 
-    def bind_wheel(self, widget):
+    def bind_wheel(self, widget, recursive=False):
         """
         Allow scrolling when on top of the widget
         :param widget: the widget
+        :param recursive: whether the ability to scroll should be added to all descendant of the widgets
         """
         # with Windows OS
         widget.bind("<MouseWheel>", self.scroll_on_wheel)
         # with Linux OS
         widget.bind("<Button-5>", self.scroll_on_wheel)
         widget.bind("<Button-4>", self.scroll_on_wheel)
+
+        # Bin all descendant of the widget
+        if recursive:
+            for child in widget.winfo_children():
+                self.bind_wheel(child, recursive=True)
 
     def set(self, lo, hi):
         """
