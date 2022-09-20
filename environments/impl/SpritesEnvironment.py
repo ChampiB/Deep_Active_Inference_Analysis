@@ -18,7 +18,6 @@ dSpritesDataset = collections.namedtuple('dSpritesDataset', field_names=['images
 # Additionally, when the shape reaches top border of the image a hint describing where to bring the shape
 # to get high reward is displayed
 #
-# TODO Unify epistemic and standard dsprites
 class SpritesEnvironment(gym.Env):
 
     def __init__(self, json):
@@ -33,7 +32,7 @@ class SpritesEnvironment(gym.Env):
         self.observation_space = spaces.Box(low=0, high=255, shape=(64, 64, 1), dtype=self.np_precision)
 
         # Small dataset attributes
-        self.n_elements_small_ds = 50
+        self.n_elements_small_ds = 20
         self.group_size = 1024
 
         # Clone the repository if it does not exist
@@ -147,7 +146,6 @@ class SpritesEnvironment(gym.Env):
         """
         self.index = np.random.randint(len(self.latent_states))
         self.state = self.latent_states[self.index].copy()
-        print(f"reset: index[{self.index % 1024}], state{self.state}")
         self.last_r = 0.0
         self.frame_id = 0
         self.reward_on_the_right = bool(random.getrandbits(1))
@@ -167,8 +165,6 @@ class SpritesEnvironment(gym.Env):
         actions_fn = [self.down, self.up, self.left, self.right, self.idle]
         if not isinstance(action, int):
             action = action.item()
-        if action != 4:
-            print(f"state: {self.state}, index: {self.index % 1024}, action: {action}")
         for i in range(self.repeats):
             if action < 0 or action > 4:
                 exit('Invalid action.')
@@ -176,13 +172,7 @@ class SpritesEnvironment(gym.Env):
             if self.difficulty == "easy" and self.epistemic is False:
                 done, self.last_r = self.compute_easy_reward()
             if done:
-                if action != 4:
-                    print(f"state: {self.state}, index: {self.index % 1024}")
-                    print()
                 return self.current_frame(), self.last_r, True, {}
-        if action != 4:
-            print(f"state: {self.state}, index: {self.index % 1024}")
-            print()
 
         # Make sure the environment is reset if the maximum number of steps in the trial has been reached.
         if self.frame_id >= self.max_trial_length:
