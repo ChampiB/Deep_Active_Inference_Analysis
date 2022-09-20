@@ -16,6 +16,7 @@ class AnalysisConfig:
         """
         # Get the configuration directory
         self.data_directory = data_directory
+        self.datasets_directory = data_directory + "datasets/"
         self.config_directory = data_directory + "config/"
         self.projects_directory = data_directory + "projects/"
         self.assets_directory = data_directory + "assets/"

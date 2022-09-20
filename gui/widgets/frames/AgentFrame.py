@@ -2,7 +2,6 @@ import json
 import os
 import tkinter as tk
 from json import JSONDecodeError
-
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.Entry import Entry
@@ -171,3 +170,9 @@ class AgentFrame(tk.Frame):
             print(f"Agent '{source_base_name}' will be remove.")
             os.remove(source_file)
         return True
+
+    def stop(self):
+        """
+        Stop all tasks running in background
+        """
+        pass

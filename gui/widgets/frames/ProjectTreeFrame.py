@@ -224,9 +224,6 @@ class ProjectTreeFrame(tk.Frame):
         # Change width of first column in PannedWindow
         Timer(0.1, self.set_panned_window_width).start()
 
-        # Reset the parent's frame
-        self.parent.show_frame("EmptyFrame")
-
     def set_panned_window_width(self):
         """
         Set the width of the panned window to make sure the first slash makes just enough space for the project tree

@@ -73,6 +73,7 @@ class ProjectPage(tk.Frame):
 
         # Hide the currently displayed page
         if self.current_frame is not None:
+            self.current_frame.stop()
             self.current_frame.pack_forget()
 
         # Display the requested page

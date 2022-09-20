@@ -23,6 +23,12 @@ class EmptyFrame(tk.Frame):
         # Change background color
         self.config(background=self.conf.colors["dark_gray"])
 
+    def stop(self):
+        """
+        Stop tasks running in the background
+        """
+        pass
+
     def refresh(self):
         """
         Refresh the empty frame

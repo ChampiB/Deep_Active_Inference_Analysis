@@ -30,10 +30,15 @@ class FormSpritesEnvironment(tk.Frame):
         self.env = env
         self.source_file = file
 
+        # Configure columns weights
+        self.columnconfigure(0, weight=5)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+
         # Create characteristics label frame
         self.characteristics = LabelFrameFactory.create(self, text="Characteristics")
         FormSpritesEnvironment.configure_columns(self.characteristics)
-        self.characteristics.grid(row=0, column=0, pady=15, sticky="nsew")
+        self.characteristics.grid(row=0, column=0, pady=15, sticky="nsew", columnspan=3)
 
         self.difficulty_label = LabelFactory.create(self.characteristics, text="Difficulty:", theme="dark")
         self.difficulty_label.grid(row=0, column=0, pady=5, padx=5, sticky="nse")
@@ -71,10 +76,17 @@ class FormSpritesEnvironment(tk.Frame):
         self.epistemic_combobox = Combobox(self.characteristics, values=["True", "False"], default_value=default_val)
         self.epistemic_combobox.grid(row=3, column=1, pady=(5, 15), padx=5, sticky="nsew")
 
-        # Create the create button
+        # Create the create/update button
         text = "Create" if env is None else "Update"
-        self.create_button = ButtonFactory.create(self, text=text, theme="blue", command=self.create_or_update_sprites_env)
-        self.create_button.grid(row=1, column=0, pady=15, ipady=5, ipadx=5, sticky="nse")
+        self.create_button = ButtonFactory.create(
+            self, text=text, theme="blue", command=self.create_or_update_sprites_env
+        )
+        self.create_button.grid(row=1, column=2, pady=15, ipady=5, ipadx=5, sticky="nsew")
+
+        # Create the play button
+        if env is not None:
+            self.play_button = ButtonFactory.create(self, text="Play", theme="blue", command=self.play)
+            self.play_button.grid(row=1, column=1, pady=15, padx=5, ipady=5, ipadx=5, sticky="nsew")
 
     @staticmethod
     def configure_columns(widget):
@@ -85,6 +97,13 @@ class FormSpritesEnvironment(tk.Frame):
         widget.columnconfigure(0, weight=4, uniform="labelframe")
         widget.columnconfigure(1, weight=4, uniform="labelframe")
         widget.columnconfigure(2, weight=1, uniform="labelframe")
+
+    def play(self):
+        """
+        Play the environment
+        """
+        env = self.create_or_update_sprites_env()
+        self.parent.play(env)
 
     def create_or_update_sprites_env(self):
         """
@@ -104,7 +123,7 @@ class FormSpritesEnvironment(tk.Frame):
 
         # Write the description of the new agent on the filesystem
         file = open(envs_directories + file_name, "a")
-        json.dump({
+        env_dic = {
             "name": env_name,
             "module": "environments.impl.SpritesEnvironment",
             "class": "SpritesEnvironment",
@@ -112,11 +131,12 @@ class FormSpritesEnvironment(tk.Frame):
             "max_trial_length": self.max_trial_length_entry.get(),
             "n_repeats": self.n_repeats_entry.get(),
             "epistemic": self.epistemic_combobox.get(),
-        }, file, indent=2)
+        }
+        json.dump(env_dic, file, indent=2)
 
         # Refresh project tree and display empty frame in the project page
         self.project_page.project_tree.refresh(self.project_page.project_name)
-        self.project_page.show_frame("EmptyFrame")
+        return env_dic
 
     def refresh(self):
         # Update button text

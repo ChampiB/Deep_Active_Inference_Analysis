@@ -1,19 +1,54 @@
 import json
 import os
+from PIL import Image, ImageTk
+import numpy as np
 import tkinter as tk
 from json import JSONDecodeError
+import threading
+import time
+from environments.EnvironmentFactory import EnvironmentFactory
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.Entry import Entry
 from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.LabelFrameFactory import LabelFrameFactory
 from gui.widgets.modern.Scrollbar import Scrollbar
+import pygame
 
 
 class EnvironmentFrame(tk.Frame):
     """
     A class allowing to create a new environment
     """
+
+    tkinter_to_pygame = {
+        24: pygame.K_q,
+        25: pygame.K_w,
+        26: pygame.K_e,
+        27: pygame.K_r,
+        28: pygame.K_t,
+        29: pygame.K_y,
+        30: pygame.K_u,
+        31: pygame.K_i,
+        32: pygame.K_o,
+        33: pygame.K_p,
+        38: pygame.K_a,
+        39: pygame.K_s,
+        40: pygame.K_d,
+        41: pygame.K_f,
+        42: pygame.K_g,
+        43: pygame.K_h,
+        44: pygame.K_j,
+        45: pygame.K_k,
+        46: pygame.K_l,
+        52: pygame.K_z,
+        53: pygame.K_x,
+        54: pygame.K_c,
+        55: pygame.K_v,
+        56: pygame.K_b,
+        57: pygame.K_n,
+        58: pygame.K_m,
+    }
 
     def __init__(self, parent, file=None):
         """
@@ -56,7 +91,7 @@ class EnvironmentFrame(tk.Frame):
         self.grid_propagate(False)
 
         # Create the canvas and scrollbar
-        self.canvas = tk.Canvas(self, bg=self.conf.colors["dark_gray"], highlightthickness=0)
+        self.canvas = tk.Canvas(self, highlightthickness=0, bg=self.conf.colors["dark_gray"])
         self.canvas.grid(row=0, column=1, sticky="news")
         self.scrollbar = Scrollbar(self, command=self.canvas.yview)
         self.scrollbar.grid(row=0, column=3, sticky='nes')
@@ -102,6 +137,22 @@ class EnvironmentFrame(tk.Frame):
         self.change_env_form()
         self.canvas.bind('<Configure>', self.frame_width)
 
+        # Attributes used to play the environment
+        self.last_key_pressed = None
+        self.image_label = None
+        self.reward_label = None
+        self.image_env_state = None
+        self.stop_env = False
+
+        self.reward = 0
+        self.image_main_thread = None
+
+    def stop(self):
+        """
+        Stop all background tasks
+        """
+        self.stop_env = True
+
     def frame_width(self, event):
         """
         Configure the canvas frame width
@@ -119,7 +170,6 @@ class EnvironmentFrame(tk.Frame):
         if self.env_form is not None:
             self.env_form.grid_remove()
         self.env_form = self.env_creation_forms[class_name](self.canvas_frame, self.env, self.file)
-        self.env_form.columnconfigure(0, weight=1)
         self.env_form.grid(row=2, column=0, pady=5, padx=5, sticky="new")
         self.scrollbar.bind_wheel(self.env_form, recursive=True)
         self.refresh()
@@ -167,3 +217,123 @@ class EnvironmentFrame(tk.Frame):
             print(f"Environment '{source_base_name}' will be remove.")
             os.remove(source_file)
         return True
+
+    def play(self, env):
+        """
+        Allow the user to play the environment
+        :param env: the environment
+        """
+        # Remove old widgets
+        self.canvas.delete("all")
+
+        # Create the label used to display the environment's observations
+        self.canvas_frame = tk.Frame(self.canvas, background=self.conf.colors["dark_gray"])
+        self.canvas_frame.rowconfigure(0, weight=1)
+        self.canvas_frame.rowconfigure(1, weight=15)
+        self.canvas_frame.rowconfigure(2, weight=1)
+        self.image_label = LabelFactory.create(self.canvas_frame, theme="dark")
+        self.image_label.grid(row=1, column=1)
+        self.reward_label = LabelFactory.create(
+            self.canvas_frame, theme="dark", text=f"Loading the '{env['name']}' environment..."
+        )
+        self.reward_label.grid(row=2, column=1)
+        x = self.canvas.winfo_width() / 2
+        y = self.canvas.winfo_height() / 2
+        self.canvas_frame_window = self.canvas.create_window(x, y, window=self.canvas_frame, anchor=tk.CENTER)
+
+        # Keep track of last key pressed
+        self.focus_force()
+        self.bind('<KeyPress>', self.track_last_key)
+        self.bind('<KeyRelease>', self.track_last_key_release)
+        self.bind("<<RequireLoadImage>>", self.update_frame)
+
+        # Play environment in background
+        threading.Thread(target=self.play_env_in_background, args=(env,)).start()
+
+    def update_frame(self, event=None):
+        """
+        Update the display of the image and reward
+        :param event: the event that triggered the call to this function
+        """
+        self.image_env_state = ImageTk.PhotoImage(self.image_main_thread)
+        self.image_label.config(image=self.image_env_state)
+        self.canvas.update_idletasks()
+        self.reward_label.config(text=f"Reward: {self.reward}")
+
+    def play_env_in_background(self, env):
+        """
+        Allow the user to play the environment by launching a thread in background
+        :param env: the environment to run
+        """
+
+        # Load environment
+        env = EnvironmentFactory.create(env)
+        keys_to_actions = env.get_keys_to_action()
+        keys_to_actions = self.pre_process(keys_to_actions)
+
+        # Retrieve the initial observation from the environment.
+        obs = env.reset()
+
+        # Let the user play the environment
+        max_size = min(self.canvas.winfo_width(), self.canvas.winfo_height()) - 200
+        while not self.stop_env:
+            # Display environment state
+            obs = obs.astype(np.uint8)
+            w, h, _ = obs.shape
+            ratio = max_size / max(w, h)
+            img = Image.fromarray(obs).resize((int(w * ratio), int(h * ratio)), Image.NEAREST)
+            self.image_main_thread = img
+            self.event_generate("<<RequireLoadImage>>")
+
+            # Select an action.
+            time.sleep(0.2)
+            if self.last_key_pressed is None or self.last_key_pressed not in keys_to_actions.keys():
+                action = keys_to_actions[None]
+            else:
+                action = keys_to_actions[self.last_key_pressed]
+
+            # Execute the action in the environment.
+            obs, self.reward, done, _ = env.step(action)
+
+            # Reset the environment if trial is over
+            if done:
+                obs = env.reset()
+
+    def track_last_key(self, event):
+        """
+        Keep track of last keep pressed
+        :param event: the event that triggered the call to this function
+        """
+        if event.keycode not in EnvironmentFrame.tkinter_to_pygame.keys():
+            return
+        self.last_key_pressed = EnvironmentFrame.tkinter_to_pygame[event.keycode]
+
+    def track_last_key_release(self, event):
+        """
+        Keep track of last keep pressed
+        :param event: the event that triggered the call to this function
+        """
+        if event.keycode not in EnvironmentFrame.tkinter_to_pygame.keys():
+            return
+        if self.last_key_pressed == EnvironmentFrame.tkinter_to_pygame[event.keycode]:
+            self.last_key_pressed = None
+
+    @staticmethod
+    def pre_process(keys_to_actions):
+        """
+        Pre-process the keys to actions mapping
+        :param keys_to_actions: the keys to actions mapping
+        :return: the pre-processed keys to actions mapping
+        """
+        tmp = {}
+        for keys, value in keys_to_actions.items():
+            if isinstance(keys, tuple):
+                for key in keys:
+                    if key is None:
+                        tmp[None] = value
+                    else:
+                        tmp[key] = value
+            else:
+                tmp[keys] = value
+        return tmp
+

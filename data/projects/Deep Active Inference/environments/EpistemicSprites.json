@@ -5,5 +5,5 @@
   "difficulty": "Hard",
   "max_trial_length": "50",
   "n_repeats": "5",
-  "epistemic": "True"
+  "epistemic": "False"
 }

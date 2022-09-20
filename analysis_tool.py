@@ -1,7 +1,6 @@
 from gui.AnalysisTool import AnalysisTool
 import os
 
-
 if __name__ == '__main__':
     """
     Start the analysis tool
