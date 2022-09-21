@@ -40,7 +40,7 @@ class ProjectSelectionPage(tk.Frame):
         # Create the top bar
         self.top_bar = TopBarFrame(
             self, display_delete_button=False, display_project_name=False, display_run_button=False,
-            display_analysis_button=False, command="quit"
+            display_server_button=False, display_analysis_button=False, command="quit"
         )
         self.top_bar.grid(row=0, column=2, sticky="nsew")
 

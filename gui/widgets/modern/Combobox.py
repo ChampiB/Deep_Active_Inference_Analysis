@@ -11,13 +11,15 @@ class Combobox(tk.Frame):
     A class representing modern looking combobox
     """
 
-    def __init__(self, parent, values, default_value=None, command=None):
+    def __init__(self, parent, values, default_value=None, command=None, image=None, theme="white"):
         """
         Constructor
         :param parent: the parent widget
         :param values: the possible value the combobox can be in
         :param default_value: the default value of the combobox
         :param command: the callback function to call when the combo-box's value has changed
+        :param image: the image to display in the left of the combobox
+        :param theme: the theme of the combobox
         """
 
         super().__init__(parent)
@@ -31,20 +33,46 @@ class Combobox(tk.Frame):
         self.bind('<Leave>', self.on_leave_combobox)
         self.bind('<Enter>', self.on_enter_combobox)
 
-        self.config(background="white", highlightthickness=1)
+        # Theme attributes
+        self.theme = theme
+        self.background_color = "white"
+        if theme == "dark":
+            self.background_color = self.conf.colors["dark_gray"]
+        self.highlight_thickness = 1  # if theme == "white" else 0
+        self.font_size = 14 if theme == "white" else 12
+        self.inner_pad = 5 if self.theme == "white" else 0
+        self.highlight = {}
+        if self.theme == "dark":
+            self.highlight = {"highlightthickness": 1, "highlightbackground": "gray"}
+
+        self.config(background=self.background_color, **self.highlight)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
+        col_index = 0
+        if image is not None:
+            self.server_image = LabelFactory.create(self, image=image)
+            self.server_image.grid(row=0, column=col_index, padx=(3, 0), pady=3, ipadx=1, ipady=1)
+            self.columnconfigure(2, weight=1)
+            col_index += 1
+
         self.values = values
         self.current_value = tk.StringVar(self, values[0] if default_value is None else default_value)
-        self.current_value_label = LabelFactory.create(self, text=self.current_value, theme="white")
-        self.current_value_label.grid(row=0, column=0, pady=8, padx=8, sticky="nsw")
-
-        self.change_value_button = ButtonFactory.create(
-            self, image=self.assets.get("black_chevron_down"), command=self.display_or_hide_list_of_values,
-            theme="white"
+        self.current_value_label = LabelFactory.create(
+            self, text=self.current_value, theme=theme, font_size=self.font_size
         )
-        self.change_value_button.grid(row=0, column=1, sticky="nse")
+        pad_y = 8 if theme == "white" else (4, 2)
+        self.current_value_label.grid(row=0, column=col_index, pady=pad_y, padx=8, sticky="nsw")
+        col_index += 1
+
+        chevron = "black_chevron_down"
+        if theme == "dark":
+            chevron = "chevron_down"
+        self.change_value_button = ButtonFactory.create(
+            self, image=self.assets.get(chevron), command=self.display_or_hide_list_of_values, theme=theme
+        )
+        self.change_value_button.grid(row=0, column=col_index, sticky="nse")
+        col_index += 1
 
         self.list_values_widget = None
 
@@ -91,6 +119,8 @@ class Combobox(tk.Frame):
         """
         Hide the list of values if currently displayed, and display the list of values if currently hidden
         """
+        ipad_y = 5 if self.theme == "white" else 2
+
         # Create the list of values if it does not exist
         if self.list_values_widget is None:
             x, y, cx, cy = self.bbox()
@@ -98,12 +128,22 @@ class Combobox(tk.Frame):
             y = y + cy + self.winfo_rooty() + 1
             self.list_values_widget = tk.Toplevel(self)
             self.list_values_widget.wm_overrideredirect(True)
-            self.list_values_widget.wm_geometry("%dx%d+%d+%d" % (cx + 2, cy * len(self.values), x, y))
+            self.list_values_widget.config(background=self.background_color, **self.highlight)
+            self.list_values_widget.wm_geometry("%dx%d+%d+%d" % (cx + 2, (cy + ipad_y * 2) * len(self.values), x, y))
             for value in self.values:
-                label = ButtonFactory.create(
-                    self.list_values_widget, theme="white", text=value, command=lambda v=value: self.update_value(v)
-                )
-                label.pack(fill="x", expand=True, ipadx=5, ipady=5)
+                if isinstance(value, str):
+                    params = {"text": value} if isinstance(value, str) else {"image": value}
+                    label = ButtonFactory.create(
+                        self.list_values_widget, theme=self.theme, font_size=self.font_size,
+                        command=lambda v=value: self.update_value(v), **params
+                    )
+                else:
+                    label = ButtonFactory.create(
+                        self.list_values_widget, theme="dark", font_size=self.font_size, **value
+                    )
+                    label.config(padx=2)
+                label.config(anchor="w")
+                label.pack(fill="x", expand=True, ipadx=self.inner_pad, ipady=ipad_y)
             self.list_values_widget.bind('<Leave>', self.on_leave_list_of_values)
             self.list_values_widget.bind('<Enter>', self.on_enter_list_of_values)
             return
@@ -112,7 +152,7 @@ class Combobox(tk.Frame):
         x, y, cx, cy = self.bbox()
         x = x + self.winfo_rootx() - 1
         y = y + cy + self.winfo_rooty() + 1
-        self.list_values_widget.wm_geometry("%dx%d+%d+%d" % (cx + 2, cy * len(self.values), x, y))
+        self.list_values_widget.wm_geometry("%dx%d+%d+%d" % (cx + 2, (cy + ipad_y * 2) * len(self.values), x, y))
 
         # Display or hide list of values
         if self.list_values_widget.winfo_viewable():
@@ -150,3 +190,13 @@ class Combobox(tk.Frame):
         :return: the current value of the combobox
         """
         return self.current_value.get()
+
+    def set_values(self, values):
+        """
+        Set the combobox values
+        :param values: the new values
+        """
+        self.list_values_widget = None
+        self.values = values
+        self.current_value.set(values[0])
+

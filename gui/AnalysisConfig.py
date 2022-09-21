@@ -25,6 +25,7 @@ class AnalysisConfig:
         self.pages_directory = data_directory + "../gui/pages/"
         self.frames_directory = data_directory + "../gui/widgets/frames/"
         self.agents_directory = data_directory + "../agents/"
+        self.hosts_directory = data_directory + "../hosts/"
 
         # Load the colors configuration
         colors_file = open(self.config_directory + "colors.json", "r")
@@ -33,6 +34,10 @@ class AnalysisConfig:
         # Load the font configuration
         font_file = open(self.config_directory + "font.json", "r")
         self.font = json.load(font_file)
+
+        # Load the servers configuration
+        server_file = open(self.config_directory + "servers.json", "r")
+        self.servers = json.load(server_file)
 
     @staticmethod
     def get(data_directory=None):

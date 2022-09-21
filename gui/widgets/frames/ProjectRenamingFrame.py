@@ -1,3 +1,4 @@
+import json
 import os
 import tkinter as tk
 from gui.AnalysisAssets import AnalysisAssets
@@ -88,10 +89,13 @@ class ProjectRenamingFrame(tk.Frame):
         # Change project description
         if new_project_description != "":
             self.parent.top_bar.description_tooltip.text = new_project_description
-            description_file = projects_directory + self.parent.project_name + "/description.txt"
+            project_file = projects_directory + self.parent.project_name + "/project.json"
             try:
-                os.remove(description_file)
+                file = open(project_file, "r")
+                project = json.load(file)
+                os.remove(project_file)
             except OSError:
-                pass
-            file = open(description_file, "w+")
-            file.write(new_project_description)
+                return
+            project["description"] = new_project_description
+            file = open(project_file, "w")
+            json.dump(project, file, indent=2)

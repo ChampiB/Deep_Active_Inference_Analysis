@@ -1,0 +1,9 @@
+{
+  "local computer": {
+    "class": "LocalComputer"
+  },
+  "hydra cluster": {
+    "username": "tmac3",
+    "hostname": "myrtle.kent.ac.uk"
+  }
+}

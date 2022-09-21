@@ -45,15 +45,28 @@ class LabelFactory:
         if font_size is None:
             font_size = 14
 
-        return tk.Label(
-            parent,
-            image=image,
-            text=text,
-            font=(LabelFactory.conf.font["name"], font_size, LabelFactory.conf.font["style"]),
-            background=LabelFactory.conf.colors["dark_gray"],
-            foreground=LabelFactory.conf.colors["light_text"],
-            **parameters
-        )
+        if text is None or isinstance(text, str):
+            return tk.Label(
+                parent,
+                image=image,
+                text=text,
+                font=(LabelFactory.conf.font["name"], font_size, LabelFactory.conf.font["style"]),
+                background=LabelFactory.conf.colors["dark_gray"],
+                foreground=LabelFactory.conf.colors["light_text"],
+                **parameters
+            )
+        elif isinstance(text, tk.StringVar):
+            return tk.Label(
+                parent,
+                image=image,
+                textvariable=text,
+                font=(LabelFactory.conf.font["name"], font_size, LabelFactory.conf.font["style"]),
+                background=LabelFactory.conf.colors["dark_gray"],
+                foreground=LabelFactory.conf.colors["light_text"],
+                **parameters
+            )
+        else:
+            raise Exception(f"Text type not supported {type(text)}.")
 
     @staticmethod
     def create_gray_label(parent, text, image, font_size):

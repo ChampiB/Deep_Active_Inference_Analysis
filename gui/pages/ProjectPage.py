@@ -1,3 +1,4 @@
+import json
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -123,9 +124,9 @@ class ProjectPage(tk.Frame):
         else:
             # Load project description
             try:
-                description_file = self.conf.projects_directory + project + "/description.txt"
-                file = open(description_file, "r+")
-                description = "\n".join(file.readlines())
+                project_file = self.conf.projects_directory + project + "/project.json"
+                project_file = open(project_file, "r")
+                description = json.load(project_file)["description"]
             except OSError:
                 description = ""
 

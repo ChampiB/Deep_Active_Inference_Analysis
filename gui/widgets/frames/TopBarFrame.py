@@ -1,10 +1,13 @@
+import json
 import os
 import tkinter as tk
 from gui.AnalysisAssets import AnalysisAssets
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.frames.EmptyFrame import EmptyFrame
 from gui.widgets.frames.ProjectRenamingFrame import ProjectRenamingFrame
+from gui.widgets.frames.ServerConfigurationFrame import ServerConfigurationFrame
 from gui.widgets.modern.ButtonFactory import ButtonFactory
+from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.ToolTip import ToolTip
 
 
@@ -15,11 +18,12 @@ class TopBarFrame(tk.Frame):
 
     def __init__(
         self, parent, display_delete_button=True, display_project_name=True, display_run_button=True,
-        display_analysis_button=True, command="go_to_project_selection_page"
+        display_server_button=True, display_analysis_button=True, command="go_to_project_selection_page"
     ):
         """
         Constructor
         :param parent: the parent widget
+        :param display_server_button: whether to display the server button
         :param display_project_name: whether to display the project name
         :param display_run_button:  whether to display the run button
         :param display_analysis_button: whether to display the analysis button
@@ -46,12 +50,27 @@ class TopBarFrame(tk.Frame):
             self.name_label.grid(row=0, column=col_index, padx=6, pady=6)
             col_index += 1
 
+        # Add the button for ssh server specification
+        self.training_location = None
+        if display_server_button:
+            self.new_button = self.assets.get("new_button", subsample=16)
+            new_server = {"image": self.new_button, "text": "new ssh server", "command": self.ask_new_server}
+            default_value = self.get_project_from_filesystem()
+            if default_value is not None:
+                default_value = default_value["host"]
+            self.server_combobox = Combobox(
+                self, values=list(self.conf.servers.keys()) + [new_server], default_value=default_value,
+                theme="dark", image=self.assets.get("server"), command=self.update_default_host
+            )
+            self.server_combobox.grid(row=0, column=col_index, padx=(0, 10), pady=(3, 0), ipadx=1, ipady=1)
+            col_index += 1
+
         # Add the run button
-        self.training_location = "locally"
         if display_run_button:
             self.run_button = ButtonFactory.create(self, image=self.assets.get("run_button"))
             self.run_button.grid(row=0, column=col_index, padx=3, pady=3, ipadx=6, ipady=3)
-            self.run_button_tip = ToolTip(self.run_button, f"Run training '{self.training_location}'")
+            text = f"Run training" if self.training_location is None else f"Run training '{self.training_location}'"
+            self.run_button_tip = ToolTip(self.run_button, text)
             col_index += 1
 
         # Add the analysis button
@@ -82,8 +101,9 @@ class TopBarFrame(tk.Frame):
         self.closing_button.grid(row=0, column=col_index, pady=10, padx=10, sticky="we")
         col_index += 1
 
-        # Frame for renaming the project
+        # Frame for renaming the project, and frame for server configuration
         self.project_renaming_frame = None
+        self.server_configuration_frame = None
 
     def go_to_project_selection_page(self):
         """
@@ -103,7 +123,50 @@ class TopBarFrame(tk.Frame):
         :param event: unused
         """
         if self.project_renaming_frame is None or not self.project_renaming_frame.winfo_viewable():
+            # Forget server configuration frame
+            if self.server_configuration_frame is not None:
+                self.server_configuration_frame.place_forget()
+
+            # Display project renaming frame
             self.project_renaming_frame = ProjectRenamingFrame(self.parent)
+
+    def ask_new_server(self, event=None):
+        """
+        Ask the user for the new server configuration
+        :param event: unused
+        """
+        self.server_combobox.list_values_widget.withdraw()
+        if self.server_configuration_frame is None or not self.server_configuration_frame.winfo_viewable():
+            # Forget project renaming frame
+            if self.project_renaming_frame is not None:
+                self.project_renaming_frame.place_forget()
+
+            # Display server configuration frame
+            self.server_configuration_frame = ServerConfigurationFrame(self.parent)
+
+    def update_servers(self):
+        """
+        Update the servers list
+        """
+        # Update file system
+        server_file = self.conf.config_directory + "servers.json"
+        server_file = open(server_file, "w")
+        json.dump(self.conf.servers, server_file, indent=2)
+
+        # Update combobox values
+        new_server = {"image": self.new_button, "text": "new ssh server", "command": self.ask_new_server}
+        values = list(self.conf.servers.keys()) + [new_server]
+        self.server_combobox.set_values(values)
+
+    def update_default_host(self):
+        """
+        Update the default project host
+        :return:
+        """
+        project = self.get_project_from_filesystem()
+        project["host"] = self.server_combobox.get()
+        project_file = self.conf.projects_directory + self.parent.project_name + "/project.json"
+        json.dump(project, open(project_file, "w"), indent=2)
 
     def refresh(self, project, description=None):
         """
@@ -113,11 +176,36 @@ class TopBarFrame(tk.Frame):
         """
         self.name_label.config(text=project)
         self.description_tooltip.text = description
+        default_value = self.get_project_from_filesystem()
+        if default_value is not None:
+            default_value = default_value["host"]
+        self.server_combobox.current_value.set(default_value)
 
     def delete_selection(self):
         """
         Delete the selected agents and environments
         """
+        # If no selection select the currently selected host
+        if len(self.parent.project_tree.selected_entries) == 0:
+            host = self.server_combobox.get()
+            if host != "local computer":
+                del self.conf.servers[host]
+                self.update_servers()
+            return
+
+        # Else delete selection
         for dir_name, file_name in self.parent.project_tree.selected_entries:
             os.remove(self.conf.projects_directory + f"{self.parent.project_name}/{dir_name.lower()}/{file_name}")
         self.parent.project_tree.refresh(self.parent.project_name)
+
+    def get_project_from_filesystem(self):
+        """
+        Getter
+        :return: the project description
+        """
+        try:
+            project_file = self.conf.projects_directory + self.parent.project_name + "/project.json"
+            project_file = open(project_file, "r")
+            return json.load(project_file)
+        except FileNotFoundError:
+            return None

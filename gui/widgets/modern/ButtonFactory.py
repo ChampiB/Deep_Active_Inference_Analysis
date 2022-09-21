@@ -77,6 +77,9 @@ class ButtonFactory:
         :param command: the button's command
         :return: the created label
         """
+        parameters = {}
+        if text is not None and image is not None:
+            parameters["compound"] = tk.LEFT
         if font_size is None:
             font_size = 10
 
@@ -91,7 +94,8 @@ class ButtonFactory:
             background=ButtonFactory.conf.colors["dark_gray"],
             activebackground=ButtonFactory.conf.colors["gray"],
             foreground=ButtonFactory.conf.colors["light_text"],
-            activeforeground=ButtonFactory.conf.colors["light_text"]
+            activeforeground=ButtonFactory.conf.colors["light_text"],
+            **parameters
         )
 
     @staticmethod
@@ -119,7 +123,8 @@ class ButtonFactory:
             background=ButtonFactory.conf.colors["dark_gray"],
             activebackground=ButtonFactory.conf.colors["dark_gray"],
             foreground=ButtonFactory.conf.colors["light_text"],
-            activeforeground=ButtonFactory.conf.colors["light_text"]
+            activeforeground=ButtonFactory.conf.colors["light_text"],
+            compound=tk.LEFT
         )
 
     @staticmethod
