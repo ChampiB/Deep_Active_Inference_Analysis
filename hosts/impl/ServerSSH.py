@@ -65,8 +65,9 @@ class ServerSSH(HostInterface):
         agent = project_dir + f"agents/{agent}"
         env = project_dir + f"environments/{env}"
         print(f"{agent} {env}")
+        training_script = f"{self.repository_path}/train_agent.sh"
         cmd = f"cd {self.repository_path} && " \
-              f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu train_agent.sh {agent} {env}"
+              f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} {agent} {env}"
         self.execute(client, cmd)
 
         # Close client
