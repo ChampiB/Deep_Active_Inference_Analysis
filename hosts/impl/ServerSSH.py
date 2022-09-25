@@ -81,8 +81,8 @@ class ServerSSH(HostInterface):
         """
         stdin, stdout, stderr = client.exec_command(command)
         print(command)
-        print(stdout.readlines())
         print(stderr.readlines())
+        print()
         stdin.close()
         stdout.close()
         stderr.close()
