@@ -63,10 +63,10 @@ class ServerSSH(HostInterface):
         project_dir = self.repository_path + f"data/projects/{project_name}/"
         agent = project_dir + f"agents/{agent}"
         env = project_dir + f"environments/{env}"
+        print("f{agent} {env}")
         cmd = f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu train_agent.sh {agent} {env}"
         self.execute(client, cmd)
 
-    #/cluster/home/cug/tmac3/Deep_Active_Inference_Tasks
         # Close client
         client.close()
 
