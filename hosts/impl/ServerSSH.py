@@ -51,22 +51,22 @@ class ServerSSH(HostInterface):
         self.execute(client, cmd)
 
         # Make sure the repository is up to day
-        self.execute(client, f"cd {self.repository_path}")
-        self.execute(client, f"git pull")
+        self.execute(client, f"cd {self.repository_path} && git pull")
 
         # Create the virtual environment, if the directory does not exist
         self.execute(client, f"[ ! -d '{self.repository_path}/venv' ] && python3 -m venv {self.repository_path}/venv")
 
         # Activate environment and install requirements
         self.execute(client, f"source '{self.repository_path}/venv/bin/activate'")
-        self.execute(client, f"pip install -r requirements.txt")
+        self.execute(client, f"cd {self.repository_path} && pip install -r requirements.txt")
 
         # Start the job
         project_dir = self.repository_path + f"data/projects/{project_name}/"
         agent = project_dir + f"agents/{agent}"
         env = project_dir + f"environments/{env}"
         print(f"{agent} {env}")
-        cmd = f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu train_agent.sh {agent} {env}"
+        cmd = f"cd {self.repository_path} && " \
+              f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu train_agent.sh {agent} {env}"
         self.execute(client, cmd)
 
         # Close client
