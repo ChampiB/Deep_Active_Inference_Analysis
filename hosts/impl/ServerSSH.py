@@ -57,18 +57,24 @@ class ServerSSH(HostInterface):
         self.execute(client, f"[ ! -d '{self.repository_path}/venv' ] && python3 -m venv {self.repository_path}/venv")
 
         # Activate environment and install requirements
-        self.execute(client, f"source '{self.repository_path}/venv/bin/activate'")
-        self.execute(client, f"cd {self.repository_path} && pip install -r requirements.txt")
+        self.execute(
+            client,
+            f"cd {self.repository_path} && "
+            f"source '{self.repository_path}/venv/bin/activate' && "
+            f"pip install -r requirements.txt"
+        )
 
         # Start the job
         project_dir = self.repository_path + f"data/projects/{project_name}/"
         agent = project_dir + f"agents/{agent}"
         env = project_dir + f"environments/{env}"
         print(f"{agent} {env}")
-        training_script = f"{self.repository_path}/train_agent.sh"
-        cmd = f"cd {self.repository_path} && " \
-              f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} {agent} {env}"
-        self.execute(client, cmd)
+        training_script = f"{self.repository_path}train_agent.sh"
+        self.execute(
+            client, f"cd {self.repository_path} && "
+            f"source '{self.repository_path}/venv/bin/activate' && "
+            f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} {agent} {env}"
+        )
 
         # Close client
         client.close()
