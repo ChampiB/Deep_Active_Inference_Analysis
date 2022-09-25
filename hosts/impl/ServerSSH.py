@@ -78,13 +78,11 @@ class ServerSSH(HostInterface):
         Execute a command and close all channel returned by the command call
         :param client: the client that must be used to run the command
         :param command: the command
-        :param:
         """
         stdin, stdout, stderr = client.exec_command(command)
         print(command)
         print(stdout.readlines())
         print(stderr.readlines())
-        status
         stdin.close()
         stdout.close()
         stderr.close()
