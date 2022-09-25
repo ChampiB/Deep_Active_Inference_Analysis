@@ -48,7 +48,8 @@ class ServerSSH(HostInterface):
         repository_name = ""
         path = self.repository_path
         while repository_name == "":
-            path, repository_name = os.path.split(self.repository_path)
+            path, repository_name = os.path.split(self.repository_path[:-2])
+            print(self.repository_path[:-2])
             print(repository_name)
         cmd = f"[ ! -d '{self.repository_path}' ] && cd {path} && " \
             + "git clone https://github.com/ChampiB/Deep_Active_Inference_Analysis.git"
