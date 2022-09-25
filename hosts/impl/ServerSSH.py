@@ -80,6 +80,7 @@ class ServerSSH(HostInterface):
         :param command: the command
         """
         stdin, stdout, stderr = client.exec_command(command)
+        print(stdout.readlines())
         stdin.close()
         stdout.close()
         stderr.close()
