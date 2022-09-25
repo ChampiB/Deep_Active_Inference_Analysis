@@ -107,7 +107,7 @@ class FormOpenAI(tk.Frame):
         Create the environment file on the file system
         """
         # Get environments requested by users
-        env_name = self.parent.env_name_entry.get()
+        env_name = self.parent.env_name_entry.ge()
         envs = [env_name] if env_name.lower() != "all atari games" else FormOpenAI.all_atari_games
 
         # Get environment directory

@@ -1,9 +1,9 @@
 from agents.AgentInterface import AgentInterface
 
 
-class HMM(AgentInterface):
+class CHMM(AgentInterface):
     """
-    A Hidden Markov Model agent
+    A Critical Hidden Markov Model agent
     """
 
     def __init__(self, json_agent):
@@ -11,7 +11,7 @@ class HMM(AgentInterface):
         Constructor
         :param json_agent: the json describing the agent
         """
-        super().__init__("HMM")
+        super().__init__("CHMM")
 
     def step(self, obs):
         """
@@ -19,6 +19,7 @@ class HMM(AgentInterface):
         :param obs: the observation make
         :return: the action to take
         """
+        # TODO
         return 0
 
     def save(self, directory):
@@ -26,6 +27,7 @@ class HMM(AgentInterface):
         Save the agent on the file system
         :param directory: the directory in which to save the agent
         """
+        # TODO
         pass
 
     def learn(self, logging_file):
@@ -33,6 +35,7 @@ class HMM(AgentInterface):
         Perform one training iteration
         :param logging_file: the file in which metrics should be saved
         """
+        # TODO
         pass
 
     def is_model_based(self):

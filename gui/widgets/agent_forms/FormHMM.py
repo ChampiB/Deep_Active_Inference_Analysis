@@ -74,7 +74,7 @@ class FormHMM(tk.Frame):
         Create the agent file on the file system
         """
         agents_directories = self.conf.projects_directory + self.project_page.project_name + "/agents/"
-        file_name = self.parent.agent_name_entry.get() + ".json"
+        file_name = self.parent.agent_name_entry.get_device() + ".json"
 
         # Check if the project exist or not
         target_file = agents_directories + file_name
@@ -85,14 +85,14 @@ class FormHMM(tk.Frame):
 
         # Write the description of the new agent on the filesystem
         file = open(agents_directories + file_name, "a")
-        networks = {key: values[value.get()] for key, (value, values) in self.networks_values.items()}
+        networks = {key: values[value.get_device()] for key, (value, values) in self.networks_values.items()}
         networks = {
             key: {"module": str(value.__module__), "class": str(value.__name__)} for key, value in networks.items()
         }
         strategy = LabelFrameFactory.get_strategy(self.action_selection)
-        hp_values = {key: value.get() for key, value in self.hyper_parameters_values.items()}
+        hp_values = {key: value.get_device() for key, value in self.hyper_parameters_values.items()}
         json.dump({
-            "name": self.parent.agent_name_entry.get(),
+            "name": self.parent.agent_name_entry.get_device(),
             "module": "agents.impl.HMM",
             "class": "HMM",
             **networks,

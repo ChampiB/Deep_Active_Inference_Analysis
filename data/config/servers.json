@@ -3,7 +3,9 @@
     "class": "LocalComputer"
   },
   "hydra cluster": {
+    "class": "ServerSSH",
     "username": "tmac3",
-    "hostname": "myrtle.kent.ac.uk"
+    "hostname": "myrtle.kent.ac.uk",
+    "repository_path": "/cluster/home/cug/tmac3/Deep_Active_Inference_Analysis"
   }
 }

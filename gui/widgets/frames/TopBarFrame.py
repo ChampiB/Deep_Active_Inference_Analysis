@@ -9,6 +9,7 @@ from gui.widgets.frames.ServerConfigurationFrame import ServerConfigurationFrame
 from gui.widgets.modern.ButtonFactory import ButtonFactory
 from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.ToolTip import ToolTip
+from hosts.HostFactory import HostFactory
 
 
 class TopBarFrame(tk.Frame):
@@ -67,7 +68,7 @@ class TopBarFrame(tk.Frame):
 
         # Add the run button
         if display_run_button:
-            self.run_button = ButtonFactory.create(self, image=self.assets.get("run_button"))
+            self.run_button = ButtonFactory.create(self, image=self.assets.get("run_button"), command=self.train)
             self.run_button.grid(row=0, column=col_index, padx=3, pady=3, ipadx=6, ipady=3)
             text = f"Run training" if self.training_location is None else f"Run training '{self.training_location}'"
             self.run_button_tip = ToolTip(self.run_button, text)
@@ -104,6 +105,34 @@ class TopBarFrame(tk.Frame):
         # Frame for renaming the project, and frame for server configuration
         self.project_renaming_frame = None
         self.server_configuration_frame = None
+
+    def train(self):
+        """
+        Train the agents on the environments
+        """
+        # Get the agents and environments
+        agents = []
+        environments = []
+        for entry_type, entry_file in self.parent.project_tree.selected_entries:
+            if entry_type == "Agents":
+                agents.append(entry_file)
+            if entry_type == "Environments":
+                environments.append(entry_file)
+
+        # Check that there is at least one agent and one environment
+        if len(agents) == 0 or len(environments) == 0:
+            print("At least on agent and one environment is required for training to be successful.")
+            return
+
+        # Get the host
+        host_name = self.server_combobox.get()
+        host_json = self.conf.servers[host_name]
+        host = HostFactory.create(host_json["class"], host_json)
+
+        # Train the agents on the environment
+        for agent in agents:
+            for env in environments:
+                host.train(agent, env, self.parent.project_name)
 
     def go_to_project_selection_page(self):
         """
@@ -157,6 +186,9 @@ class TopBarFrame(tk.Frame):
         new_server = {"image": self.new_button, "text": "new ssh server", "command": self.ask_new_server}
         values = list(self.conf.servers.keys()) + [new_server]
         self.server_combobox.set_values(values)
+
+        # Update default host
+        self.update_default_host()
 
     def update_default_host(self):
         """

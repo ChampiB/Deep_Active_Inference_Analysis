@@ -26,6 +26,8 @@ class AnalysisConfig:
         self.frames_directory = data_directory + "../gui/widgets/frames/"
         self.agents_directory = data_directory + "../agents/"
         self.hosts_directory = data_directory + "../hosts/"
+        self.home_directory = os.path.expanduser('~')
+        self.ssh_key_directory = self.home_directory + "/.ssh/"
 
         # Load the colors configuration
         colors_file = open(self.config_directory + "colors.json", "r")

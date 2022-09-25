@@ -1,10 +1,7 @@
-import json
-import os
 import tkinter as tk
 from gui.AnalysisAssets import AnalysisAssets
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.ButtonFactory import ButtonFactory
-from gui.widgets.modern.Combobox import Combobox
 from gui.widgets.modern.Entry import Entry
 from gui.widgets.modern.LabelFactory import LabelFactory
 
@@ -63,20 +60,27 @@ class ServerConfigurationFrame(tk.Frame):
         self.username_entry = Entry(self, help_message="username")
         self.username_entry.grid(row=2, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
 
-        # Add the new project description label
+        # Add the hostname label
         self.hostname_label = LabelFactory.create(self, text="Hostname:", theme="gray")
         self.hostname_label.grid(row=3, column=0, padx=(10, 0), pady=(5, 10), sticky="nsw")
 
-        # Add the new project description entry
+        # Add the hostname entry
         self.hostname_entry = Entry(self, help_message="hostname")
         self.hostname_entry.config(width=40)
         self.hostname_entry.grid(row=3, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
 
+        # Add the repository directory label
+        self.repository_path_label = LabelFactory.create(self, text="Repository path:", theme="gray")
+        self.repository_path_label.grid(row=4, column=0, padx=(10, 0), pady=(5, 10), sticky="nsw")
+
+        # Add the repository directory entry
+        self.repository_path_entry = Entry(self, help_message="(server) absolute path ")
+        self.repository_path_entry.config(width=40)
+        self.repository_path_entry.grid(row=4, column=1, columnspan=2, padx=(0, 10), pady=(5, 10), sticky="nsew")
+
         # Add the update button
-        self.update_button = ButtonFactory.create(
-            self, text="Add", command=self.new_ssh_server, theme="blue"
-        )
-        self.update_button.grid(row=4, column=1, columnspan=2, pady=10, padx=(0, 10), ipady=10, sticky="nsew")
+        self.update_button = ButtonFactory.create(self, text="Add", command=self.new_ssh_server, theme="blue")
+        self.update_button.grid(row=5, column=1, columnspan=2, pady=10, padx=(0, 10), ipady=10, sticky="nsew")
 
     def new_ssh_server(self):
         """
@@ -85,17 +89,21 @@ class ServerConfigurationFrame(tk.Frame):
         # Check that the new project name and description is not empty
         self.username_entry.remove_help_message()
         self.hostname_entry.remove_help_message()
+        self.server_name_entry.remove_help_message()
         username = self.username_entry.get()
         hostname = self.hostname_entry.get()
         server_name = self.server_name_entry.get()
+        repository_path = self.repository_path_entry.get()
         if username == "" or hostname == "" or server_name == "":
             self.place_forget()
             return
 
         # Add server configuration
         self.conf.servers[server_name] = {
+            "class": "ServerSSH",
             "username": username,
-            "hostname": hostname
+            "hostname": hostname,
+            "repository_path": repository_path
         }
-        self.place_forget()
         self.parent.top_bar.update_servers()
+        self.place_forget()

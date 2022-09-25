@@ -1,11 +1,14 @@
+
 1. Allow the training of the agents on the environments (locally and on the cluster)
+1.a. Make sure tasks are not lost when changing tab
 
 2. Display the status of each training job (pending in gray, crashed in red, successful in green, running in orange):
 2.a. Display the time it has been running for / the time it took before it crashes / the time it took for training the agent / etc ...
 2.b. Display the hardware it was run on, i.e., pascal, volta, etc ...
-2.c. Allow the user to display the config of the job
+2.c. Display the host it was run on, i.e., local computer, hydra cluster, etc ...
+2.d. Display the agent and environment of the job
 
-3. Allow the user to analyse the agents policies by saving every 100K training iteration a trial made by the agent
+3. Allow the user to analyse the agents policies by saving every 10K training iteration a trial made by the agent (the user must be able to choose the time granularity)
 4. Allow the user to analyse the representation learned by the agents by showing examples of reconstruction of sequences of images
 5. Allow the user to look at the amount of rewards gathered by the agent
 6. Allow the user to look at the variational free energy of the agent

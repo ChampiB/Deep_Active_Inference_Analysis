@@ -110,7 +110,7 @@ class FormSpritesEnvironment(tk.Frame):
         Create the environment file on the file system
         """
         # Get environment directory and file name
-        env_name = self.parent.env_name_entry.get()
+        env_name = self.parent.env_name_entry.get_device()
         envs_directories = self.conf.projects_directory + self.project_page.project_name + "/environments/"
         file_name = env_name + ".json"
 

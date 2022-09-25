@@ -274,16 +274,16 @@ class LabelFrameFactory:
         :param label_frame: the action selection label frame
         :return: a dictionary describing the action selection strategy
         """
-        strategy_name = label_frame.grid_slaves(row=0, column=1)[0].get()
+        strategy_name = label_frame.grid_slaves(row=0, column=1)[0].get_device()
         strategy = LabelFrameFactory.strategies[strategy_name]
 
         strategy_params = {}
         if strategy_name == "EpsilonGreedy":
-            strategy_params["epsilon_start"] = label_frame.grid_slaves(row=1, column=1)[0].get()
-            strategy_params["epsilon_end"] = label_frame.grid_slaves(row=2, column=1)[0].get()
-            strategy_params["epsilon_decay"] = label_frame.grid_slaves(row=3, column=1)[0].get()
+            strategy_params["epsilon_start"] = label_frame.grid_slaves(row=1, column=1)[0].get_device()
+            strategy_params["epsilon_end"] = label_frame.grid_slaves(row=2, column=1)[0].get_device()
+            strategy_params["epsilon_decay"] = label_frame.grid_slaves(row=3, column=1)[0].get_device()
         if strategy_name == "SoftmaxSampling":
-            strategy_params["gain"] = label_frame.grid_slaves(row=1, column=1)[0].get()
+            strategy_params["gain"] = label_frame.grid_slaves(row=1, column=1)[0].get_device()
 
         return {
             "module": str(strategy.__module__),
