@@ -22,6 +22,8 @@ class ServerSSH(HostInterface):
         self.username = username
         self.hostname = hostname
         self.repository_path = repository_path
+        if self.repository_path[-1] != "/":
+            self.repository_path += "/"
 
     def run_task(self, agent, env, project_name):
         """
