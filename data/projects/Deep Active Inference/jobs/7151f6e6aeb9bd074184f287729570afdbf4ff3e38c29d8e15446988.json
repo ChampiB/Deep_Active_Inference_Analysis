@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Venture-v5.json",
-  "status": "running[0:49]",
+  "status": "running[2:22]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 250991
