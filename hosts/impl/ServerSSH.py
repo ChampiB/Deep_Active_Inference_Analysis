@@ -79,7 +79,7 @@ class ServerSSH(HostInterface):
         agent = project_dir + f"agents/{agent}"
         env = project_dir + f"environments/{env}"
         training_script = f"{self.repository_path}train_agent.sh {self.repository_path}"
-        stdout = self.execute(
+        values = self.execute(
             client, f"cd {self.repository_path} && "
             f"source '{self.repository_path}/venv/bin/activate' && "
             f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} \"{agent}\" \"{env}\"",
@@ -89,8 +89,10 @@ class ServerSSH(HostInterface):
         # Save job in file
         json_path = self.get_job_json_path(agent, env, project_name)
         file = open(json_path, mode="w+")
-        print(stdout[0].split(" ")[-1])
-        job_id = stdout[0].split(" ")[-1]
+        print(values["stdout"])
+        print(values["stdout"][0])
+        print(values["stdout"][0].split(" ")[-1])
+        job_id = values["stdout"][0].split(" ")[-1]
         try:
             job_id = int(job_id)
         except Exception as e:
