@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Jamesbond-v5.json",
-  "status": "crashed",
+  "status": "pending",
   "host": "hydra cluster",
   "hardware": "gpu",
-  "job_id": 250911
+  "job_id": 250916
 }
