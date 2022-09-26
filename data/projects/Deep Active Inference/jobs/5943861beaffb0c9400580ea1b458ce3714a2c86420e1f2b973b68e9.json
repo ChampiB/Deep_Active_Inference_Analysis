@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Jamesbond-v5.json",
-  "status": "pending",
+  "status": "running[0:07]",
   "host": "hydra cluster",
-  "hardware": "gpu",
+  "hardware": "pascal01",
   "job_id": 250916
 }
