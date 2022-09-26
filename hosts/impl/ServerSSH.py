@@ -107,13 +107,15 @@ class ServerSSH(HostInterface):
             job = json.load(open(json_path, "r"))
             values = self.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
             if len(values["stdout"]) != 0:
+                print(f"Job {job['job_id']} is still running")
                 return
             values = self.execute(
                 client,
                 f"cat {self.repository_path}slurm-{job['job_id']}.out | grep 'Agent trained successfully!'",
                 return_stdout=True
             )
-            if len(values["stdout"]) == 0:
+            if len(values["stdout"]) != 0:
+                print(f"Job {job['job_id']} crashed")
                 return
 
         print("NOOOO!")
