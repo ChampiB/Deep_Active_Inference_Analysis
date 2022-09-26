@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_NameThisGame-v5.json",
-  "status": "pending",
+  "status": "crashed",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 250917

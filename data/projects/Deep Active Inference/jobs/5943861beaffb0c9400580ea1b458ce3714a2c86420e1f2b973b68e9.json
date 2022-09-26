@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Jamesbond-v5.json",
-  "status": "running[0:07]",
+  "status": "crashed",
   "host": "hydra cluster",
   "hardware": "pascal01",
   "job_id": 250916
