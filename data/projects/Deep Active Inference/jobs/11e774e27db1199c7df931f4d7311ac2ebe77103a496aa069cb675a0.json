@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_FishingDerby-v5.json",
-  "status": "crashed",
+  "status": "running[0:02]",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 250889
+  "hardware": "volta01",
+  "job_id": 250898
 }

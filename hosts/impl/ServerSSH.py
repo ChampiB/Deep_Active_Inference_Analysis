@@ -59,15 +59,15 @@ class ServerSSH(HostInterface):
         # Make sure the repository is up to day
         self.execute(
             client,
-            f"[ -d '{self.repository_path}' ] &&"
             f"cd {self.repository_path} &&"
+            f"git add . &&"
+            f"git commit -m 'tmp' &&"
             f"git pull"
         )
 
         # Create the virtual environment, if the directory does not exist
         self.execute(
             client,
-            f"[ -d '{self.repository_path}/venv' ] &&"
             f"python3 -m venv {self.repository_path}/venv"
         )
 

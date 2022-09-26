@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Pong-v5.json",
-  "status": "running[7:57]",
+  "status": "running[10:39]",
   "host": "hydra cluster",
   "hardware": "pascal02",
   "job_id": 250883
