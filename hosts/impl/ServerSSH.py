@@ -116,7 +116,6 @@ class ServerSSH(HostInterface):
             if job["status"] != "crashed":
                 return
 
-        return
         # Start the job
         self.setup_ssh_server(client)
         project_dir = self.repository_path + f"data/projects/{project_name}/"
