@@ -76,8 +76,6 @@ class JobStatusFrame(tk.Frame):
         for job in jobs:
             job_file = open(jobs_directory + job, "r")
             job_json = json.load(job_file)
-            print(job_json)
-            print(job_json.keys())
             if "job_id" in job_json.keys():
                 job_json = ServerSSH.refresh_job(job_json, self.project_page.project_name)
             for i, key in enumerate(["agent", "env", "status", "host", "hardware"]):

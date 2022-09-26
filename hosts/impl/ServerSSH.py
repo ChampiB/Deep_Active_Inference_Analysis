@@ -178,9 +178,12 @@ class ServerSSH(HostInterface):
         else:
             values = ServerSSH.execute(
                 client,
-                f"cat {host['repository_path']}slurm-{job_json['job_id']}.out | grep 'Agent trained successfully!'",
+                f"cat {host['repository_path']}/slurm-{job_json['job_id']}.out | grep 'Agent trained successfully!'",
                 return_stdout=True
             )
+            print(f"{host['repository_path']}slurm-{job_json['job_id']}.out")
+            print(job_json['job_id'])
+            print(values["stdout"])
             if len(values["stdout"]) != 0:
                 job_json["status"] = "success"
             else:
