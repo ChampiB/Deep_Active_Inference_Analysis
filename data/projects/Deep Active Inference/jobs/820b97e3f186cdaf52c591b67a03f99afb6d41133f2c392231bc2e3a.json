@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Seaquest-v5.json",
-  "status": "running[0:31]",
+  "status": "running[0:46]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 250990
