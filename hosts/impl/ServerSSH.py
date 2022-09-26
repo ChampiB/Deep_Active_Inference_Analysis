@@ -186,14 +186,12 @@ class ServerSSH(HostInterface):
             if squeue_info[4] == "R":
                 job_json["hardware"] = squeue_info[7]
         else:
+            print(job_json['job_id'])
             values = ServerSSH.execute(
                 client,
                 f"cat {host['repository_path']}/slurm-{job_json['job_id']}.out | grep 'Agent trained successfully!'",
                 return_stdout=True
             )
-            print(f"{host['repository_path']}slurm-{job_json['job_id']}.out")
-            print(job_json['job_id'])
-            print(values["stdout"])
             if len(values["stdout"]) != 0:
                 job_json["status"] = "success"
             else:
@@ -202,6 +200,7 @@ class ServerSSH(HostInterface):
         # Save job on filesystem
         json_path = HostInterface.get_job_json_path(job_json["agent"], job_json["env"], project_name)
         file = open(json_path, mode="w")
+        print(job_json["job_id"])
         json.dump(job_json, file, indent=2)
         return job_json
 
@@ -215,7 +214,6 @@ class ServerSSH(HostInterface):
         """
         values = {}
         stdin, stdout, stderr = client.exec_command(command)
-        print(stderr.readlines())
         if return_stdout:
             values["stdout"] = stdout.readlines()
         stdin.close()
