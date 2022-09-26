@@ -106,7 +106,7 @@ class ServerSSH(HostInterface):
         if os.path.exists(json_path):
             job = json.load(open(json_path, "r"))
             values = self.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
-            print(values["stdout"])
+            print("[" + values["stdout"] + "]")
             job_id = values["stdout"][0].split(" ")[-1]
 
             # TODO Refresh job information
