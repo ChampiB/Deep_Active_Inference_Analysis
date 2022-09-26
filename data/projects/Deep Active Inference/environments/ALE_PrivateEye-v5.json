@@ -1,5 +1,0 @@
-{
-  "name": "ALE/PrivateEye-v5",
-  "module": "environments.impl.OpenAI",
-  "class": "OpenAI"
-}

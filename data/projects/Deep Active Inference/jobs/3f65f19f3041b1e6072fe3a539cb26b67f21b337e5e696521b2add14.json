@@ -1,8 +1,0 @@
-{
-  "agent": "HMM.json",
-  "env": "ALE_KungFuMaster-v5.json",
-  "status": "crashed",
-  "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 250922
-}

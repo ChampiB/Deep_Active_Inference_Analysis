@@ -1,8 +1,0 @@
-{
-  "agent": "CHMM[efe].json",
-  "env": "ALE_Pong-v5.json",
-  "status": "crashed",
-  "host": "hydra cluster",
-  "hardware": "pascal01",
-  "job_id": 250881
-}
