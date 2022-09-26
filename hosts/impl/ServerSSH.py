@@ -107,7 +107,7 @@ class ServerSSH(HostInterface):
             job = json.load(open(json_path, "r"))
             values = self.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
             if len(values["stdout"]) != 0:
-                print(f"Job {job['job_id']} is still running")
+                print(f"Job {job['job_id']} is still running.")
                 return
             values = self.execute(
                 client,
@@ -115,7 +115,7 @@ class ServerSSH(HostInterface):
                 return_stdout=True
             )
             if len(values["stdout"]) != 0:
-                print(f"Job {job['job_id']} crashed")
+                print(f"Job {job['job_id']} finished successfully.")
                 return
 
         print("NOOOO!")
