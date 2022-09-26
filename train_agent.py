@@ -118,7 +118,8 @@ if __name__ == '__main__':
     parser.add_argument('env_file', type=str, help='the path to the environment file')
     args = parser.parse_args()
 
-    print(f"======>{torch.cuda.current_device()}")
+    # Keep track of GPU used
+    print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
     # Train the agent
     train(args.agent_file, args.env_file)
