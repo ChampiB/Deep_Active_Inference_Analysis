@@ -1,10 +1,11 @@
 import json
 import os
+import time
+
 from git import Repo
 from threading import Thread
 from gui.AnalysisConfig import AnalysisConfig
 from hosts.HostInterface import HostInterface
-from concurrent.futures import ThreadPoolExecutor as Pool
 from paramiko import SSHClient, AutoAddPolicy
 
 
@@ -29,7 +30,7 @@ class ServerSSH(HostInterface):
         self.repository_path = repository_path
         if self.repository_path[-1] != "/":
             self.repository_path += "/"
-        self.lock = True
+        self.locked = False
 
     def update_repository(self):
         """
@@ -88,6 +89,10 @@ class ServerSSH(HostInterface):
         :param env: the environment
         :param project_name: the name of the project for which the agent is trained
         """
+        while self.locked:
+            time.sleep(0.5)
+        self.locked = True
+
         # Save agent and environment names
         agent_name = agent
         env_name = env
@@ -109,6 +114,7 @@ class ServerSSH(HostInterface):
             values = self.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
             if len(values["stdout"]) != 0:
                 print(f"Job {job['job_id']} is still running.")
+                self.locked = False
                 return
             values = self.execute(
                 client,
@@ -117,6 +123,7 @@ class ServerSSH(HostInterface):
             )
             if len(values["stdout"]) != 0:
                 print(f"Job {job['job_id']} finished successfully.")
+                self.locked = False
                 return
 
         # Start the job
@@ -150,6 +157,7 @@ class ServerSSH(HostInterface):
 
         # Close client
         client.close()
+        self.locked = False
 
     @staticmethod
     def refresh_job(job_json, project_name):
