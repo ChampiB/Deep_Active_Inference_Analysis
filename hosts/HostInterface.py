@@ -3,18 +3,13 @@ import hashlib
 
 import torch
 
+from gui.AnalysisConfig import AnalysisConfig
+
 
 class HostInterface(abc.ABC):
     """
     An abstract interface that all hosts must implement
     """
-
-    def __init__(self, conf):
-        """
-        Constructor
-        :param conf: the configuration
-        """
-        self.conf = conf
 
     @abc.abstractmethod
     def train(self, agent, env, project_name):
@@ -26,7 +21,8 @@ class HostInterface(abc.ABC):
         """
         ...
 
-    def get_job_json_path(self, agent, env, project_name):
+    @staticmethod
+    def get_job_json_path(agent, env, project_name):
         """
         Getter
         :param agent: the agent json
@@ -34,9 +30,10 @@ class HostInterface(abc.ABC):
         :param project_name: the project name
         :return: the hash corresponding to the (agent, environment) pair
         """
+        conf = AnalysisConfig.instance
         hashed = agent + env
         hashed = hashlib.sha224(hashed.encode("utf-8")).hexdigest()
-        return self.conf.projects_directory + f"{project_name}/jobs/{hashed}.json"
+        return conf.projects_directory + f"{project_name}/jobs/{hashed}.json"
 
     @staticmethod
     def get_device():

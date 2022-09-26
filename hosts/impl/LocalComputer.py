@@ -19,7 +19,6 @@ class LocalComputer(HostInterface):
         :param kwargs: the remaining arguments
         """
         self.conf = AnalysisConfig.instance
-        super().__init__(self.conf)
         self.tasks = queue.Queue()
         self.pool = Pool(max_workers=1)
 

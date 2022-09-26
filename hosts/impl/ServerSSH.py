@@ -22,7 +22,6 @@ class ServerSSH(HostInterface):
         :param kwargs: the remaining arguments
         """
         self.conf = AnalysisConfig.instance
-        super().__init__(self.conf)
         self.server_name = server_name
         self.username = username
         self.hostname = hostname
@@ -151,7 +150,13 @@ class ServerSSH(HostInterface):
         client.close()
 
     @staticmethod
-    def refresh_job(job_json):
+    def refresh_job(job_json, project_name):
+        """
+        Refresh the job by querying the ssh server
+        :param job_json: the job json
+        :param project_name: the project name of the job
+        :return: the updated job json
+        """
         # Get host
         conf = AnalysisConfig.instance
         host = conf.servers[job_json["host"]]
@@ -163,22 +168,29 @@ class ServerSSH(HostInterface):
         client.set_missing_host_key_policy(AutoAddPolicy())
         client.connect(hostname=host["hostname"], username=host["username"], port=22)
 
-        # Check if job should be re-run
+        # Update job json
         values = ServerSSH.execute(client, f"squeue | grep {job_json['job_id']}", return_stdout=True)
         if len(values["stdout"]) != 0:
-            squeue_info = " ".join(values["stdout"][0].split())
-            print(squeue_info)
-            #job_json["state"]
-            print(f"Job {job_json['job_id']} is still running.")
-            return
-        values = ServerSSH.execute(
-            client,
-            f"cat {host['repository_path']}slurm-{job_json['job_id']}.out | grep 'Agent trained successfully!'",
-            return_stdout=True
-        )
-        if len(values["stdout"]) != 0:
-            print(f"Job {job_json['job_id']} finished successfully.")
-            return
+            squeue_info = values["stdout"][0].split()
+            job_json["status"] = f"running[{squeue_info[5]}]" if squeue_info[4] == "R" else "pending"
+            if squeue_info[4] == "R":
+                job_json["hardware"] = squeue_info[7]
+        else:
+            values = ServerSSH.execute(
+                client,
+                f"cat {host['repository_path']}slurm-{job_json['job_id']}.out | grep 'Agent trained successfully!'",
+                return_stdout=True
+            )
+            if len(values["stdout"]) != 0:
+                job_json["status"] = "success"
+            else:
+                job_json["status"] = "crashed"
+
+        # Save job on filesystem
+        json_path = HostInterface.get_job_json_path(job_json["agent"], job_json["env"], project_name)
+        file = open(json_path, mode="w")
+        json.dump(job_json, file, indent=2)
+        return job_json
 
     @staticmethod
     def execute(client, command, return_stdout=False):

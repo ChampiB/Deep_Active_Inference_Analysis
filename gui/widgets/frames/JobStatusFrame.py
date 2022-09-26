@@ -79,7 +79,7 @@ class JobStatusFrame(tk.Frame):
             print(job_json)
             print(job_json.keys())
             if "job_id" in job_json.keys():
-                ServerSSH.refresh_job(job_json)
+                job_json = ServerSSH.refresh_job(job_json, self.project_page.project_name)
             for i, key in enumerate(["agent", "env", "status", "host", "hardware"]):
                 text = job_json[key]
                 if key == "status" and text == "running":
