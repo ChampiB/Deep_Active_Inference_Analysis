@@ -140,12 +140,12 @@ class ServerSSH(HostInterface):
         )
 
         # Save job in file
-        file = open(json_path, mode="w+")
         job_id = values["stdout"][0].split(" ")[-1]
         try:
             job_id = int(job_id)
         except Exception as e:
             print(e)
+        file = open(json_path, mode="w+")
         json.dump({
             "agent": agent_name,
             "env": env_name,
