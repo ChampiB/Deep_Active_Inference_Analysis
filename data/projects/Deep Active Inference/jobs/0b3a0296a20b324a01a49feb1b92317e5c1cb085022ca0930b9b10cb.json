@@ -3,6 +3,6 @@
   "env": "ALE_WizardOfWor-v5.json",
   "status": "crashed",
   "host": "hydra cluster",
-  "hardware": "pascal01",
+  "hardware": "gpu",
   "job_id": 250950
 }
