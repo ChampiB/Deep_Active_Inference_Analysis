@@ -1,6 +1,5 @@
 #!/bin/sh
 
-DIRECTORY=$(dirname "$0")
-SCRIPT="${DIRECTORY}/train_agent.py"
+source "$1/venv/bin/activate"
 
-python3 $SCRIPT $*
+python3 "$1/train_agent.py '$2' '$3'"

@@ -69,7 +69,7 @@ class ServerSSH(HostInterface):
         agent = project_dir + f"agents/{agent}"
         env = project_dir + f"environments/{env}"
         print(f"{agent} {env}")
-        training_script = f"{self.repository_path}train_agent.sh"
+        training_script = f"{self.repository_path}train_agent.sh {self.repository_path}"
         self.execute(
             client, f"cd {self.repository_path} && "
             f"source '{self.repository_path}/venv/bin/activate' && "
