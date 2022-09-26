@@ -4,6 +4,7 @@ import tkinter as tk
 from gui.AnalysisConfig import AnalysisConfig
 from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.Scrollbar import Scrollbar
+from hosts.impl.ServerSSH import ServerSSH
 
 
 class JobStatusFrame(tk.Frame):
@@ -61,15 +62,24 @@ class JobStatusFrame(tk.Frame):
         """
         Display existing jobs
         """
+        # Get all jobs
         jobs_directory = self.conf.projects_directory + self.project_page.project_name + "/jobs/"
         jobs = self.conf.get_all_files(jobs_directory)
+
+        # Create header
         for i, text in enumerate(["Agent", "Environment", "Status", "Host", "Hardware"]):
             label = LabelFactory.create(self.canvas_frame, text=text, theme="dark")
             label.grid(row=0, column=i, pady=5, padx=5, sticky="nsew")
+
+        # Create rows
         row_index = 1
         for job in jobs:
             job_file = open(jobs_directory + job, "r")
             job_json = json.load(job_file)
+            print(job_json)
+            print(job_json.keys())
+            if "job_id" in job_json.keys():
+                ServerSSH.refresh_job(job_json)
             for i, key in enumerate(["agent", "env", "status", "host", "hardware"]):
                 text = job_json[key]
                 if key == "status" and text == "running":
