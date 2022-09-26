@@ -1,7 +1,7 @@
 {
   "agent": "CHMM[efe].json",
   "env": "ALE_Tutankham-v5.json",
-  "status": "running[0:03]",
+  "status": "running[4:41]",
   "host": "hydra cluster",
   "hardware": "volta01",
   "job_id": 250947
