@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Seaquest-v5.json",
-  "status": "running[0:44]",
+  "status": "running[0:52]",
   "host": "hydra cluster",
   "hardware": "pascal01",
   "job_id": 250934
