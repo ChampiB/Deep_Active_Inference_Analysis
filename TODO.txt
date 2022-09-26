@@ -1,3 +1,4 @@
+0. replace git command by call to girpython
 
 1. Allow the training of the agents on the environments (locally and on the cluster)
 1.a. Make sure tasks are not lost when changing tab

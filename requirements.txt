@@ -1,7 +1,9 @@
 gitpython
-numpy
-gym
-torch
-Pillow
+numpy~=1.21.3
+gym[atari]~=0.21.0
+torch~=1.11.0
+pillow~=9.0.1
 pygame
 paramiko
+gym[atari,accept-rom-license]
+autorom[accept-rom-license]
