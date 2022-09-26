@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Tennis-v5.json",
-  "status": "running[4:43]",
+  "status": "running[5:03]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 250989
