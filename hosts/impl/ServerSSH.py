@@ -138,6 +138,11 @@ class ServerSSH(HostInterface):
             f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} \"{agent}\" \"{env}\"",
             return_stdout=True
         )
+        print(
+            f"cd {self.repository_path} &&"
+            f"source '{self.repository_path}/venv/bin/activate' &&"
+            f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} \"{agent}\" \"{env}\""
+        )
 
         # Save job in file
         job_id = values["stdout"][0].split(" ")[-1]
