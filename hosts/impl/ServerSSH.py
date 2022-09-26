@@ -4,6 +4,7 @@ from git import Repo
 from threading import Thread
 from gui.AnalysisConfig import AnalysisConfig
 from hosts.HostInterface import HostInterface
+from concurrent.futures import ThreadPoolExecutor as Pool
 from paramiko import SSHClient, AutoAddPolicy
 
 
@@ -28,6 +29,7 @@ class ServerSSH(HostInterface):
         self.repository_path = repository_path
         if self.repository_path[-1] != "/":
             self.repository_path += "/"
+        self.pool = Pool(max_workers=1)
 
     def update_repository(self):
         """
@@ -219,4 +221,5 @@ class ServerSSH(HostInterface):
         :param env: the environment
         :param project_name: the name of the project for which the agent is trained
         """
-        Thread(target=self.run_task, args=(agent, env, project_name)).start()
+        job = self.pool.submit(self.run_task, agent, env, project_name)
+        Thread(target=lambda j: j.result(), args=(job,)).start()

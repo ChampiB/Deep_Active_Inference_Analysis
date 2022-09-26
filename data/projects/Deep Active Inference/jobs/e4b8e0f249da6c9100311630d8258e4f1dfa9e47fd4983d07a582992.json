@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Atlantis-v5.json",
-  "status": "pending",
+  "status": "crashed",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 250900
+  "hardware": "volta01",
+  "job_id": 250910
 }
