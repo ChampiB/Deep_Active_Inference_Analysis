@@ -79,7 +79,7 @@ class JobStatusFrame(tk.Frame):
             if "job_id" in job_json.keys():
                 job_json = ServerSSH.refresh_job(job_json, self.project_page.project_name)
             for i, key in enumerate(["agent", "env", "status", "host", "hardware"]):
-                text = job_json[key]
+                text = job_json[key].replace(".json", "")
                 if key == "status" and text == "running":
                     text += "[" + job_json["execution_time"] + "]"
                 label = LabelFactory.create(self.canvas_frame, text=text, theme="dark")

@@ -1,7 +1,8 @@
-0. replace git command by call to girpython
-
 1. Allow the training of the agents on the environments (locally and on the cluster)
 1.a. Make sure tasks are not lost when changing tab
+1.b. Make sure the gpu on which the job has been running is always remembered
+1.b. Make the table pretty
+1.b. Update status when running on "local computer"
 
 2. Display the status of each training job (pending in gray, crashed in red, successful in green, running in orange):
 2.a. Display the time it has been running for / the time it took before it crashes / the time it took for training the agent / etc ...

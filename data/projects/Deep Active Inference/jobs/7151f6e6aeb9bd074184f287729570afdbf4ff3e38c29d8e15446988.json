@@ -1,8 +1,0 @@
-{
-  "agent": "HMM.json",
-  "env": "ALE_Venture-v5.json",
-  "status": "running[5:43]",
-  "host": "hydra cluster",
-  "hardware": "pascal01",
-  "job_id": 250933
-}
