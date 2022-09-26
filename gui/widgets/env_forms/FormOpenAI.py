@@ -107,7 +107,7 @@ class FormOpenAI(tk.Frame):
         Create the environment file on the file system
         """
         # Get environments requested by users
-        env_name = self.parent.env_name_entry.ge()
+        env_name = self.parent.env_name_entry.get()
         envs = [env_name] if env_name.lower() != "all atari games" else FormOpenAI.all_atari_games
 
         # Get environment directory
@@ -123,14 +123,14 @@ class FormOpenAI(tk.Frame):
                 env = f"ALE/{env}"
             if env not in FormOpenAI.all_atari_games:
                 print(f"Environment '{env}' is not a valid Atari game.")
-                return
+                continue
 
             # Check if the project exist or not
             target_file = envs_directories + file_name
             source_file = target_file if self.source_file is None else self.source_file
             env_creation = self.source_file is None
             if not EnvironmentFrame.can_update_be_performed(envs_directories, source_file, target_file, env_creation):
-                return
+                continue
 
             # Write the description of the new agent on the filesystem
             file = open(target_file, "a")
