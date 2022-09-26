@@ -118,7 +118,7 @@ if __name__ == '__main__':
     parser.add_argument('env_file', type=str, help='the path to the environment file')
     args = parser.parse_args()
 
-    print(torch.cuda.current_device())
-    
+    print(f"======>{torch.cuda.current_device()}")
+
     # Train the agent
     train(args.agent_file, args.env_file)
