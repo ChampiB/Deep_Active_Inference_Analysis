@@ -1,0 +1,8 @@
+{
+  "agent": "HMM.json",
+  "env": "ALE_Pong-v5.json",
+  "status": "running[8:00]",
+  "host": "hydra cluster",
+  "hardware": "pascal01",
+  "job_id": 250882
+}

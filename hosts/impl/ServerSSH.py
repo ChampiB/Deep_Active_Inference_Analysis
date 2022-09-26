@@ -35,7 +35,7 @@ class ServerSSH(HostInterface):
         """
         try:
             repo = Repo(self.conf.root_directory)
-            repo.git.add(update=True)
+            repo.git.add(all=True)
             repo.index.commit("update the agents and environments")
             origin = repo.remote(name='origin')
             origin.push()

@@ -1,0 +1,8 @@
+{
+  "agent": "HMM.json",
+  "env": "ALE_Atlantis-v5.json",
+  "status": "pending",
+  "host": "hydra cluster",
+  "hardware": "gpu",
+  "job_id": 250894
+}

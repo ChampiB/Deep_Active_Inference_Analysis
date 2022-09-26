@@ -1,0 +1,8 @@
+{
+  "agent": "CHMM[efe].json",
+  "env": "ALE_Boxing-v5.json",
+  "status": "crashed",
+  "host": "hydra cluster",
+  "hardware": "pascal01",
+  "job_id": 250880
+}

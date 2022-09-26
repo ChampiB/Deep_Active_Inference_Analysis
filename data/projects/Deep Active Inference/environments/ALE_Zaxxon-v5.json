@@ -1,0 +1,5 @@
+{
+  "name": "ALE/Zaxxon-v5",
+  "module": "environments.impl.OpenAI",
+  "class": "OpenAI"
+}
