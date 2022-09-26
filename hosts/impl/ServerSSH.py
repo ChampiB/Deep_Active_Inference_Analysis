@@ -73,7 +73,7 @@ class ServerSSH(HostInterface):
         self.execute(
             client, f"cd {self.repository_path} && "
             f"source '{self.repository_path}/venv/bin/activate' && "
-            f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} {agent} {env}"
+            f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} \"{agent}\" \"{env}\""
         )
 
         # Close client
