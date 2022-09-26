@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_KungFuMaster-v5.json",
-  "status": "pending",
+  "status": "running[0:03]",
   "host": "hydra cluster",
-  "hardware": "gpu",
+  "hardware": "volta01",
   "job_id": 250915
 }
