@@ -17,4 +17,4 @@ class HostFactory:
         :param params: the host parameters
         :return: the created host
         """
-        return HostFactory.hosts_list[key](key, **params)
+        return HostFactory.hosts_list[key](**params)

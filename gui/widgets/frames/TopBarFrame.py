@@ -129,8 +129,9 @@ class TopBarFrame(tk.Frame):
             return
 
         # Get the host
-        host_name = self.server_combobox.get()
-        host_json = self.conf.servers[host_name]
+        server_name = self.server_combobox.get()
+        host_json = self.conf.servers[server_name]
+        host_json["server_name"] = server_name
         host = HostFactory.create(host_json["class"], host_json)
 
         # Train the agents on the environment

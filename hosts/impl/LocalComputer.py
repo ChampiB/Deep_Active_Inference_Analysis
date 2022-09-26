@@ -13,15 +13,13 @@ class LocalComputer(HostInterface):
     A class representing the local computer
     """
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, **kwargs):
         """
         Constructor
-        :param name: the host name
         :param kwargs: the remaining arguments
         """
         self.conf = AnalysisConfig.instance
         super().__init__(self.conf)
-        self.name = name
         self.tasks = queue.Queue()
         self.pool = Pool(max_workers=1)
 

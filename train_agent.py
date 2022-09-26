@@ -55,6 +55,9 @@ def training_loop(agent, env, logging_file):
     # Close the environment
     env.close()
 
+    # Success!
+    print("Agent trained successfully!")
+
 
 def train(agent_file, env_file):
     """
