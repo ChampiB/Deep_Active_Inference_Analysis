@@ -56,7 +56,7 @@ def training_loop(agent, env, logging_file):
     env.close()
 
     # Success!
-    print("Agent trained successfully!")
+    print("Agent trained successfully!", flush=True)
 
 
 def train(agent_file, env_file):
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Keep track of GPU used
-    print(f"GPU: {torch.cuda.get_device_name(torch.cuda.current_device())}")
+    print(f"GPU: {torch.cuda.get_device_name(torch.cuda.current_device())}", flush=True)
 
     # Train the agent
     train(args.agent_file, args.env_file)
