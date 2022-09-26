@@ -183,18 +183,20 @@ class ServerSSH(HostInterface):
         if len(values["stdout"]) != 0:
             squeue_info = values["stdout"][0].split()
             job_json["status"] = f"running[{squeue_info[5]}]" if squeue_info[4] == "R" else "pending"
-            if squeue_info[4] == "R":
-                job_json["hardware"] = squeue_info[7]
         else:
             values = ServerSSH.execute(
                 client,
                 f"cat {host['repository_path']}/slurm-{job_json['job_id']}.out | grep 'Agent trained successfully!'",
                 return_stdout=True
             )
-            if len(values["stdout"]) != 0:
-                job_json["status"] = "success"
-            else:
-                job_json["status"] = "crashed"
+            job_json["status"] = "success" if len(values["stdout"]) != 0 else "crashed"
+
+        values = ServerSSH.execute(
+            client,
+            f"cat {host['repository_path']}/slurm-{job_json['job_id']}.out | grep 'GPU:'",
+            return_stdout=True
+        )
+        job_json["hardware"] = values["stdout"][0].split(" ")[1] if len(values["stdout"]) != 0 else "gpu"
 
         # Save job on filesystem
         json_path = HostInterface.get_job_json_path(job_json["agent"], job_json["env"], project_name)

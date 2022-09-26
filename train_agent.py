@@ -119,7 +119,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Keep track of GPU used
-    print(torch.cuda.get_device_name(torch.cuda.current_device()))
+    print(f"GPU: {torch.cuda.get_device_name(torch.cuda.current_device())}")
 
     # Train the agent
     train(args.agent_file, args.env_file)
