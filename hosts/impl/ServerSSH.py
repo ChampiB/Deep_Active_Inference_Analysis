@@ -207,7 +207,6 @@ class ServerSSH(HostInterface):
         """
         values = {}
         stdin, stdout, stderr = client.exec_command(command)
-        print(stdin.readlines())
         print(stdout.readlines())
         print(stderr.readlines())
         if return_stdout:
