@@ -109,6 +109,7 @@ class ProjectPage(tk.Frame):
         os.mkdir(project_dir)
         os.mkdir(project_dir + "/agents")
         os.mkdir(project_dir + "/environments")
+        os.mkdir(project_dir + "/jobs")
 
         return default_name
 

@@ -15,6 +15,7 @@ class AnalysisConfig:
         :param data_directory: the data directory
         """
         # Get the configuration directory
+        self.root_directory = data_directory + "../"
         self.data_directory = data_directory
         self.datasets_directory = data_directory + "datasets/"
         self.config_directory = data_directory + "config/"

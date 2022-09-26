@@ -110,6 +110,9 @@ class TopBarFrame(tk.Frame):
         """
         Train the agents on the environments
         """
+        # Hide the tip
+        self.run_button_tip.hidetip()
+
         # Get the agents and environments
         agents = []
         environments = []
@@ -122,6 +125,7 @@ class TopBarFrame(tk.Frame):
         # Check that there is at least one agent and one environment
         if len(agents) == 0 or len(environments) == 0:
             print("At least on agent and one environment is required for training to be successful.")
+            self.parent.show_frame("JobStatusFrame")
             return
 
         # Get the host
@@ -133,6 +137,9 @@ class TopBarFrame(tk.Frame):
         for agent in agents:
             for env in environments:
                 host.train(agent, env, self.parent.project_name)
+
+        # Display job status frame
+        self.parent.show_frame("JobStatusFrame")
 
     def go_to_project_selection_page(self):
         """

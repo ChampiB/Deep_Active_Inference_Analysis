@@ -1,4 +1,7 @@
+import json
+import os.path
 import queue
+import threading
 from concurrent.futures import ThreadPoolExecutor as Pool
 import train_agent
 from gui.AnalysisConfig import AnalysisConfig
@@ -10,19 +13,21 @@ class LocalComputer(HostInterface):
     A class representing the local computer
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, name, **kwargs):
         """
         Constructor
+        :param name: the host name
         :param kwargs: the remaining arguments
         """
+        self.conf = AnalysisConfig.instance
+        super().__init__(self.conf)
+        self.name = name
         self.tasks = queue.Queue()
         self.pool = Pool(max_workers=1)
-        self.conf = AnalysisConfig.instance
 
-    def run_task(self, x):
+    def run_task(self):
         """
         Run the next task in the queue
-        :param x: unused
         """
         # Get agent and environment files
         if self.tasks.empty():
@@ -41,8 +46,26 @@ class LocalComputer(HostInterface):
         :param env: the environment
         :param project_name: the name of the project for which the agent is trained
         """
+        # Get json path
+        json_path = self.get_job_json_path(agent, env, project_name)
+
+        # Check if job should be re-run
+        if os.path.exists(json_path):
+            job = json.load(open(json_path, "r"))
+            if job["status"] != "crashed":
+                return
+
+        # Launch a new job
+        file = open(json_path, mode="w+")
+        json.dump({
+            "agent": agent,
+            "env": env,
+            "status": "pending",
+            "host": "local computer",
+            "hardware": "cpu",
+        }, file, indent=2)
         agent = project_name + f"/agents/{agent}"
         env = project_name + f"/environments/{env}"
         self.tasks.put((agent, env))
         job = self.pool.submit(self.run_task)
-        job.add_done_callback(self.run_task)
+        threading.Thread(target=lambda j: j.result(), args=(job,)).start()

@@ -26,7 +26,6 @@ def training_loop(agent, env, logging_file):
     obs = env.reset()
     total_rewards = 0
     for i in range(1000000):
-
         # Select an action
         action = agent.step(obs)
 
