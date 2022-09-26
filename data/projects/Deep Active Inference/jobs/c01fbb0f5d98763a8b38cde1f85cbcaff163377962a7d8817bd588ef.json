@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_TimePilot-v5.json",
-  "status": "running[0:07]",
+  "status": "running[0:14]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 251014
