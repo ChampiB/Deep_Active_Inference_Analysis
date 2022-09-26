@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Zaxxon-v5.json",
-  "status": "running[0:35]",
+  "status": "crashed",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 250995
