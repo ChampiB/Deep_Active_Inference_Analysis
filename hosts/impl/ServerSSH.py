@@ -108,17 +108,15 @@ class ServerSSH(HostInterface):
             values = self.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
             if len(values["stdout"]) != 0:
                 return
-            print(values["stdout"])
-            job_id = values["stdout"][0].split(" ")[-1]
-
-            # TODO Refresh job information
-            #    print("Agent trained successfully!")
-
-            job = json.load(open(json_path, "r"))
-            if job["status"] != "crashed":
+            values = self.execute(
+                client,
+                f"cat {self.repository_path}slurm-{job['job_id']}.out | grep 'Agent trained successfully!'",
+                return_stdout=True
+            )
+            if len(values["stdout"]) == 0:
                 return
 
-        return
+        print("NOOOO!")
         # Start the job
         self.setup_ssh_server(client)
         project_dir = self.repository_path + f"data/projects/{project_name}/"
