@@ -1,8 +1,7 @@
 {
   "agent": "DQN.json",
-  "env": "ALE_RoadRunner-v5.json",
+  "env": "ALE_TimePilot-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251096
+  "hardware": "gpu"
 }
