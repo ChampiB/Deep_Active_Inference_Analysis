@@ -1,7 +1,7 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Robotank-v5.json",
-  "status": "running[1:27]",
+  "status": "crashed",
   "host": "hydra cluster",
   "hardware": "Tesla P100-PCIE-16GB",
   "job_id": 251133

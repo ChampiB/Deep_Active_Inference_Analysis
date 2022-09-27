@@ -1,10 +1,12 @@
 import json
+import os
 import threading
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from gui.DataStorage import DataStorage
 from gui.json.Job import Job
+from gui.widgets.modern.ButtonFactory import ButtonFactory
 from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.Scrollbar import Scrollbar
 from hosts.impl.ServerSSH import ServerSSH
@@ -33,11 +35,18 @@ class JobStatusFrame(tk.Frame):
         self.project_page = parent.master.master.master
         self.conf = DataStorage.get("conf")
         self.window = DataStorage.get("window")
+        self.assets = DataStorage.get("assets")
+        self.agents = agents
+        self.environments = environments
+
+        # Load delete button image
+        self.delete_button_img = self.assets.get("red_delete_button")
 
         # Change background color and configure AgentFrame
         self.config(background=self.conf.colors["dark_gray"])
+        self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=120)
-        self.columnconfigure(3, weight=1)
+        self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
         self.grid_propagate(False)
 
@@ -45,7 +54,7 @@ class JobStatusFrame(tk.Frame):
         self.canvas = tk.Canvas(self, bg=self.conf.colors["dark_gray"], highlightthickness=0)
         self.canvas.grid(row=0, column=1, sticky="news")
         self.scrollbar = Scrollbar(self, command=self.canvas.yview)
-        self.scrollbar.grid(row=0, column=3, sticky='nes')
+        self.scrollbar.grid(row=0, column=2, sticky='nes')
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
         # Create the canvas frame
@@ -70,9 +79,9 @@ class JobStatusFrame(tk.Frame):
         :param environments: the environments whose jobs should be displayed
         """
         # Create header
-        for i, text in enumerate(["Agent", "Environment", "Status[dd:hh:mm:ss]", "Host", "Hardware"]):
+        for i, text in enumerate(["Agent", "Environment", "Status[dd:hh:mm:ss]", "Host", "Hardware", ""]):
             label = LabelFactory.create(self.canvas_frame, text=text, theme="dark", font_size=14)
-            label.grid(row=0, column=i, pady=5, padx=5, sticky="nsew")
+            label.grid(row=0, column=i, pady=5, sticky="nsew")
         separator = ttk.Separator(self.canvas_frame, orient='horizontal')
         separator.grid(row=1, column=0, columnspan=5, sticky="nsew")
 
@@ -111,7 +120,8 @@ class JobStatusFrame(tk.Frame):
         row = tk.Frame(self.canvas_frame, bg=bg)
         for i in range(5):
             row.columnconfigure(i, weight=1, uniform="true")
-        row.grid(row=row_index, column=0, columnspan=5, pady=5, sticky="nsew")
+            row.columnconfigure(i, weight=1, uniform="true")
+        row.grid(row=row_index, column=0, columnspan=5, sticky="nsew")
 
         # Update job if it is running on the server
         if "job_id" in job_json.keys():
@@ -130,7 +140,36 @@ class JobStatusFrame(tk.Frame):
 
             theme = "dark" if row_index % 2 != 0 else "gray"
             label = LabelFactory.create(row, text=text, theme=theme)
-            label.grid(row=0, column=i, pady=5, sticky="nsew")
+            i_pad_y = 5 if row_index % 2 != 0 else 4
+            label.grid(row=0, column=i, pady=5, ipady=i_pad_y, sticky="nsew")
+
+        theme = "dark" if row_index % 2 != 0 else "light"
+        button = ButtonFactory.create(
+            row, image=self.delete_button_img, theme=theme, command=lambda j=job_json: self.delete_job(j)
+        )
+        button.grid(row=0, column=5, pady=5, ipadx=5, ipady=5, sticky="nsew")
+
+    def delete_job(self, job_json):
+        """
+        Delete the job described by the json
+        :param job_json: the json
+        """
+        # Delete job file
+        project_name = self.project_page.project_name
+        json_path = Job.get_json_path(job_json["agent"], job_json["env"], project_name)
+        if os.path.exists(json_path):
+            os.remove(json_path)
+
+        # Cancel job on cluster
+        if "job_id" in job_json.keys():
+            if job_json["status"] == "pending" or job_json["status"].startwith("running"):
+                ServerSSH(**job_json).cancel_job(job_json["job_id"])
+
+        # Remove logging directory
+        # if "job_id" not in job_json.keys():
+            # TODO remove logging is local
+
+        self.project_page.show_frame("JobStatusFrame", {"agents": self.agents, "environments": self.environments})
 
     @staticmethod
     def get_execution_time(start_time, end_time):

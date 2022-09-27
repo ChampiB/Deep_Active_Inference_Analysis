@@ -48,7 +48,7 @@ class AnalysisAssets:
 
         # If no name provided, return
         if name is None:
-            return
+            return AnalysisAssets.instance
 
         # Create the PhotoImage if it does not exist
         size = AnalysisAssets.instance.images[name] if subsample is None else subsample

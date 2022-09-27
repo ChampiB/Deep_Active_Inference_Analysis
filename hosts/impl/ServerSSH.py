@@ -82,6 +82,26 @@ class ServerSSH(HostInterface):
             f"pip install -r requirements.txt"
         )
 
+    def cancel_job(self, job_id):
+        """
+        Cancel a job
+        :param job_id: the index of the job to cancel
+        """
+        client = self.create_client()
+        self.execute(client, f"scancel {job_id}")
+
+    def create_client(self):
+        """
+        Create an ssh client
+        :return: the client
+        """
+        client = SSHClient()
+        client.load_host_keys(self.conf.ssh_key_directory + "known_hosts")
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(AutoAddPolicy())
+        client.connect(hostname=self.hostname, username=self.username, port=22)
+        return client
+
     def run_task(self, agent, env, project_name):
         """
         Run the next task in the queue
@@ -100,11 +120,7 @@ class ServerSSH(HostInterface):
         self.update_repository()
 
         # Open SSH connection
-        client = SSHClient()
-        client.load_host_keys(self.conf.ssh_key_directory + "known_hosts")
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(AutoAddPolicy())
-        client.connect(hostname=self.hostname, username=self.username, port=22)
+        client = self.create_client()
 
         # Check if job should be re-run
         job = Job(self.window.filesystem_mutex, agent, env, project_name)

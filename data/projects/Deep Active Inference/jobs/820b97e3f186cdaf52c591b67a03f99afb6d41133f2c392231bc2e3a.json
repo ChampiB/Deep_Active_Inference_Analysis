@@ -1,8 +1,8 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Seaquest-v5.json",
-  "status": "running[0:05]",
+  "status": "crashed",
   "host": "hydra cluster",
-  "hardware": "gpu",
+  "hardware": "Tesla P100-PCIE-16GB",
   "job_id": 251134
 }
