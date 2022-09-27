@@ -112,6 +112,12 @@ class ServerSSH(HostInterface):
             self.mutex.release()
             return
 
+        # Create new job
+        job = Job.create_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
+            "host": self.server_name,
+            "hardware": "gpu",
+        })
+
         # Start the job
         self.setup_ssh_server(client)
         project_dir = self.repository_path + f"data/projects/{project_name}/"
@@ -126,12 +132,8 @@ class ServerSSH(HostInterface):
         )
         job_id = values["stdout"][0].split(" ")[-1]
 
-        # Save job in file
-        Job.create_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
-            "host": self.server_name,
-            "hardware": "gpu",
-            "job_id": job_id
-        })
+        # Save job index
+        job.update("job_id", job_id)
 
         # Close client
         client.close()
@@ -198,6 +200,7 @@ class ServerSSH(HostInterface):
         stdin, stdout, stderr = client.exec_command(command)
         if return_stdout:
             values["stdout"] = stdout.readlines()
+        print(stderr.readlines())
         stdin.close()
         stdout.close()
         stderr.close()

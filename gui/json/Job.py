@@ -38,7 +38,17 @@ class Job:
         :param value: the value
         :param save: whether to apply change to the file system
         """
+        # Pre-processing
+        if key == "job_id":
+            try:
+                value = int(value)
+            except Exception as e:
+                print(e)
+
+        # Update key-value pair
         self.job[key] = value
+
+        # Save job on filesystem
         if save:
             self.mutex.acquire()
             with open(self.json_path, mode="w+") as file:
