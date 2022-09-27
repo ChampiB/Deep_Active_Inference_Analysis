@@ -165,7 +165,8 @@ class JobStatusFrame(tk.Frame):
             if job_json["status"] == "pending" or job_json["status"].startswith("running"):
                 server_name = job_json["host"]
                 host_json = self.conf.servers[server_name]
-                ServerSSH(server_name=server_name, **host_json).cancel_job(job_json["job_id"])
+                host_json["server_name "] = server_name 
+                ServerSSH(**host_json).cancel_job(job_json["job_id"])
 
         # Remove logging directory
         # if "job_id" not in job_json.keys():
