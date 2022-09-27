@@ -68,6 +68,10 @@ class Job:
         """
         if os.path.exists(self.json_path):
             job = json.load(open(self.json_path, "r"))
+            if 'job_id' not in job.keys():
+                print(f"Job index not available.")
+                ssh_server.locked = False
+                return False
             values = ssh_server.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
             if len(values["stdout"]) != 0:
                 print(f"Job {job['job_id']} is still running.")
