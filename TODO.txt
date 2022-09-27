@@ -16,3 +16,4 @@
 8. (bonus) Allow the user to visualise the variance of the latent spaces for different agents
 9. (bonus) Allow the user to visualise the actions taken by the agent as training progresses and the entropy of the prior over actions
 10. (bonus) Allow the agents and environments to be grouped within subdirectories
+11. (bonus) Allow the deletion of jobs

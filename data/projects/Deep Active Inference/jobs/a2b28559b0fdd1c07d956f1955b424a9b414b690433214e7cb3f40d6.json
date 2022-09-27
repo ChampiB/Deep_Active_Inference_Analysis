@@ -1,7 +1,0 @@
-{
-  "agent": "HMM.json",
-  "env": "ALE_Seaquest-v5.json",
-  "status": "crashed",
-  "host": "local computer",
-  "hardware": "cpu"
-}
