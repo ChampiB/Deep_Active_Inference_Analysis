@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Zaxxon-v5.json",
-  "status": "running[0:58]",
+  "status": "running[1:02]",
   "host": "hydra cluster",
   "hardware": "Tesla P100-PCIE-16GB",
   "job_id": 251090
