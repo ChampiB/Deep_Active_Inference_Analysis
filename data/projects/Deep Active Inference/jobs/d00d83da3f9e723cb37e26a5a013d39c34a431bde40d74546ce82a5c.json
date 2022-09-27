@@ -1,8 +1,7 @@
 {
   "agent": "HMM.json",
-  "env": "ALE_Venture-v5.json",
+  "env": "ALE_Zaxxon-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251115
+  "hardware": "gpu"
 }
