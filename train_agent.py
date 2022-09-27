@@ -122,7 +122,6 @@ def train(agent_filename, env_filename, window=None):
         # Update the job
         job = Job(window.filesystem_mutex, agent, env, project_name)
         job.update("status", "crashed")
-        window.stop_training = False
         exit(0)
     else:
         print("Agent trained successfully!", flush=True)

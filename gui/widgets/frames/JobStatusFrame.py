@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from gui.DataStorage import DataStorage
+from gui.json.Job import Job
 from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.Scrollbar import Scrollbar
 from hosts.impl.ServerSSH import ServerSSH
@@ -12,12 +13,15 @@ from hosts.impl.ServerSSH import ServerSSH
 class JobStatusFrame(tk.Frame):
     """
     A class displaying the job status
+    Only the job corresponding to the agent-environment pairs provided by the user will be displayed
     """
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, agents=None, environments=None, **kwargs):
         """
         Constructor
         :param parent: parent widget
+        :param agents: the agents whose jobs should be displayed
+        :param environments: the environments whose jobs should be displayed
         :param kwargs: the remaining arguments
         """
 
@@ -53,20 +57,18 @@ class JobStatusFrame(tk.Frame):
             self.canvas_frame.columnconfigure(i, weight=1, uniform="true")
 
         # Display the jobs
-        threading.Thread(target=self.display_jobs).start()
+        threading.Thread(target=self.display_jobs, args=(agents, environments)).start()
 
         self.scrollbar.bind_wheel(self, recursive=True)
         self.agent_form = None
         self.canvas.bind('<Configure>', self.frame_width)
 
-    def display_jobs(self):
+    def display_jobs(self, agents, environments):
         """
         Display existing jobs
+        :param agents: the agents whose jobs should be displayed
+        :param environments: the environments whose jobs should be displayed
         """
-        # Get all jobs
-        jobs_directory = self.conf.projects_directory + self.project_page.project_name + "/jobs/"
-        jobs = self.conf.get_all_files(jobs_directory)
-
         # Create header
         for i, text in enumerate(["Agent", "Environment", "Status[dd:hh:mm:ss]", "Host", "Hardware"]):
             label = LabelFactory.create(self.canvas_frame, text=text, theme="dark", font_size=14)
@@ -76,41 +78,57 @@ class JobStatusFrame(tk.Frame):
 
         # Create table's rows
         row_index = 2
-        for job in jobs:
-            # Load job json
+        project_name = self.project_page.project_name
+        if agents is None or environments is None:
+            # Get all jobs
+            jobs_directory = self.conf.projects_directory + self.project_page.project_name + "/jobs/"
+            jobs = self.conf.get_all_files(jobs_directory)
             self.window.filesystem_mutex.acquire()
-            with open(jobs_directory + job, "r") as job_file:
-                job_json = json.load(job_file)
+            jobs_json = [json.load(open(jobs_directory + job, "r")) for job in jobs]
             self.window.filesystem_mutex.release()
+        else:
+            # Get selected jobs
+            mutex = self.window.filesystem_mutex
+            jobs_json = [Job(mutex, agent, env, project_name).json for agent in agents for env in environments]
 
-            # Create one table row
-            bg = self.conf.colors["dark_gray"] if row_index % 2 != 0 else self.conf.colors["gray"]
-            row = tk.Frame(self.canvas_frame, bg=bg)
-            for i in range(5):
-                row.columnconfigure(i, weight=1, uniform="true")
-            row.grid(row=row_index, column=0, columnspan=5, pady=5, sticky="nsew")
-
-            # Update job if it is running on the server
-            if "job_id" in job_json.keys():
-                job_json = ServerSSH.refresh_job(job_json, self.project_page.project_name)
-
-            # Create row's columns
-            for i, key in enumerate(["agent", "env", "status", "host", "hardware"]):
-                text = job_json[key].replace(".json", "")
-                if key == "status" and text == "running":
-                    if "execution_time" in job_json.keys():
-                        text += "[" + job_json["execution_time"] + "]"
-                    else:
-                        start_time = datetime.strptime(job_json["start_time"], "%m/%d/%Y, %H:%M:%S")
-                        execution_time = self.get_execution_time(start_time, datetime.now())
-                        text += "[" + execution_time + "]"
-
-                theme = "dark" if row_index % 2 != 0 else "gray"
-                label = LabelFactory.create(row, text=text, theme=theme)
-                label.grid(row=0, column=i, pady=5, sticky="nsew")
+        # Display jobs
+        for job_json in jobs_json:
+            self.display_job(row_index, job_json)
             row_index += 1
             self.scrollbar.bind_wheel(self, recursive=True)
             self.refresh()
+
+    def display_job(self, row_index, job_json):
+        """
+        Display one job
+        :param row_index: the index of the row where the job should be displayed
+        :param job_json: the path to the json describing the job
+        """
+        # Create one table row
+        bg = self.conf.colors["dark_gray"] if row_index % 2 != 0 else self.conf.colors["gray"]
+        row = tk.Frame(self.canvas_frame, bg=bg)
+        for i in range(5):
+            row.columnconfigure(i, weight=1, uniform="true")
+        row.grid(row=row_index, column=0, columnspan=5, pady=5, sticky="nsew")
+
+        # Update job if it is running on the server
+        if "job_id" in job_json.keys():
+            job_json = ServerSSH.refresh_job(job_json, self.project_page.project_name)
+
+        # Create row's columns
+        for i, key in enumerate(["agent", "env", "status", "host", "hardware"]):
+            text = job_json[key].replace(".json", "")
+            if key == "status" and text == "running":
+                if "execution_time" in job_json.keys():
+                    text += "[" + job_json["execution_time"] + "]"
+                else:
+                    start_time = datetime.strptime(job_json["start_time"], "%m/%d/%Y, %H:%M:%S")
+                    execution_time = self.get_execution_time(start_time, datetime.now())
+                    text += "[" + execution_time + "]"
+
+            theme = "dark" if row_index % 2 != 0 else "gray"
+            label = LabelFactory.create(row, text=text, theme=theme)
+            label.grid(row=0, column=i, pady=5, sticky="nsew")
 
     @staticmethod
     def get_execution_time(start_time, end_time):

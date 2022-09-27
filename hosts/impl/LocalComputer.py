@@ -25,8 +25,9 @@ class LocalComputer(HostInterface):
         Run the next task in the queue
         :param job: the jib to run
         """
-        # Start the task
-        self.window.stop_training = False
+        # Check whether to start the task
+        if self.window.stop_training:
+            return
 
         # Get agent and environment files
         if self.window.tasks.empty():
@@ -45,9 +46,6 @@ class LocalComputer(HostInterface):
             print(e)
             job.update("status", "crashed")
 
-        # Stop the task
-        self.window.stop_training = True
-
     def train(self, agent, env, project_name):
         """
         Train the agent in the environment
@@ -65,4 +63,5 @@ class LocalComputer(HostInterface):
         env = project_name + f"/environments/{env}"
         self.window.tasks.put((agent, env, project_name))
         job = self.window.pool.submit(self.run_task, job)
+        self.window.jobs.append(job)
         threading.Thread(target=lambda j=job: j.result()).start()

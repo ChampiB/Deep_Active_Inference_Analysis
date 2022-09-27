@@ -40,7 +40,8 @@ class AnalysisWindow(tk.Tk):
         self.tasks = queue.Queue()
         self.pool = Pool(max_workers=1)
         self.filesystem_mutex = Lock()
-        self.stop_training = True
+        self.stop_training = False
+        self.jobs = []
 
     def show_page(self, page_name, parameters=None):
         """
@@ -79,10 +80,15 @@ class AnalysisWindow(tk.Tk):
             job.update("status", "crashed")
 
         # Stop the task currently running
-        if not self.stop_training:
+        if self.jobs:
             self.stop_training = True
-        while self.stop_training:
-            time.sleep(0.2)
+            ready_to_close = False
+            while not ready_to_close:
+                ready_to_close = True
+                for job in self.jobs:
+                    if job.running():
+                        ready_to_close = False
+                time.sleep(0.2)
 
         # Destroy the window
         self.destroy()

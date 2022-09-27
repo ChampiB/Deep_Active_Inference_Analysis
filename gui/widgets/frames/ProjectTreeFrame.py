@@ -241,8 +241,8 @@ class ProjectTreeFrame(tk.Frame):
         :param file: the file whose details should be displayed
         """
         if directory == "Agents":
-            self.parent.show_frame("AgentFrame", file)
+            self.parent.show_frame("AgentFrame", {"file": file})
         elif directory == "Environments":
-            self.parent.show_frame("EnvironmentFrame", file)
+            self.parent.show_frame("EnvironmentFrame", {"file": file})
         else:
             print(f"In ProjectTreeFrame.display_details, the directory {directory} is not supported.")

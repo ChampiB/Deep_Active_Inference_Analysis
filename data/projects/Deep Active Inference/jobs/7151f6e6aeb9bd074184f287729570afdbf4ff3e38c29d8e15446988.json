@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Venture-v5.json",
-  "status": "pending",
-  "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251115
+  "status": "crashed",
+  "host": "local computer",
+  "hardware": "cpu",
+  "start_time": "09/27/2022, 16:35:57"
 }

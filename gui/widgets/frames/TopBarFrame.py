@@ -140,7 +140,7 @@ class TopBarFrame(tk.Frame):
                 host.train(agent, env, self.parent.project_name)
 
         # Display job status frame
-        self.parent.show_frame("JobStatusFrame")
+        self.parent.show_frame("JobStatusFrame", {"agents": agents, "environments": environments})
 
     def go_to_project_selection_page(self):
         """

@@ -1,8 +1,0 @@
-{
-  "agent": "DQN.json",
-  "env": "ALE_Venture-v5.json",
-  "status": "running[1:12]",
-  "host": "hydra cluster",
-  "hardware": "Tesla P100-PCIE-16GB",
-  "job_id": 251088
-}

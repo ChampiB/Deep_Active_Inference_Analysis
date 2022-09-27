@@ -29,10 +29,10 @@ class Job:
         mutex.acquire()
         try:
             with open(self.json_path, "r") as file:
-                self.job = json.load(file)
+                self.json = json.load(file)
         except Exception as e:
             print(e)
-            self.job = None
+            self.json = None
         mutex.release()
 
     def update(self, key, value, save=True):
@@ -50,13 +50,13 @@ class Job:
                 print(e)
 
         # Update key-value pair
-        self.job[key] = value
+        self.json[key] = value
 
         # Save job on filesystem
         if save:
             self.mutex.acquire()
             with open(self.json_path, mode="w+") as file:
-                json.dump(self.job, file, indent=2)
+                json.dump(self.json, file, indent=2)
             self.mutex.release()
 
     def can_be_restarted(self, ssh_server, client):
