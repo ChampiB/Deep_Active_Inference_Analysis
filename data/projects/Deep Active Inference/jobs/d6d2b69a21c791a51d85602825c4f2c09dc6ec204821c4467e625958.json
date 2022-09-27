@@ -1,7 +1,7 @@
 {
   "agent": "CHMM[efe].json",
   "env": "ALE_Venture-v5.json",
-  "status": "running[0:53]",
+  "status": "running[0:56]",
   "host": "hydra cluster",
   "hardware": "Tesla P100-PCIE-16GB",
   "job_id": 251059
