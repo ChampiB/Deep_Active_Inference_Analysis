@@ -93,6 +93,8 @@ class JobStatusFrame(tk.Frame):
 
         # Display jobs
         for job_json in jobs_json:
+            if job_json is None:
+                continue
             self.display_job(row_index, job_json)
             row_index += 1
             self.scrollbar.bind_wheel(self, recursive=True)

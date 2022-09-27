@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
-  "env": "ALE_Seaquest-v5.json",
-  "status": "running[1:38]",
+  "env": "ALE_Robotank-v5.json",
+  "status": "running[1:27]",
   "host": "hydra cluster",
   "hardware": "Tesla P100-PCIE-16GB",
-  "job_id": 251132
+  "job_id": 251133
 }
