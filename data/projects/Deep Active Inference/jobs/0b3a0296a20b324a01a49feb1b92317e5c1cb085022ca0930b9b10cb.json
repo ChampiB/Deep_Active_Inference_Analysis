@@ -1,8 +1,7 @@
 {
   "agent": "CHMM[efe].json",
-  "env": "ALE_UpNDown-v5.json",
+  "env": "ALE_WizardOfWor-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251069
+  "hardware": "gpu"
 }

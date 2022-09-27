@@ -1,0 +1,7 @@
+{
+  "agent": "HMM.json",
+  "env": "ALE_Seaquest-v5.json",
+  "status": "pending",
+  "host": "hydra cluster",
+  "hardware": "gpu"
+}
