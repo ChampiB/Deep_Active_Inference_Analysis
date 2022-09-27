@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Venture-v5.json",
-  "status": "running[0:05]",
+  "status": "running[0:10]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 251088
