@@ -1,8 +1,7 @@
 {
   "agent": "CHMM[efe].json",
-  "env": "ALE_VideoPinball-v5.json",
+  "env": "ALE_RoadRunner-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251064
+  "hardware": "gpu"
 }
