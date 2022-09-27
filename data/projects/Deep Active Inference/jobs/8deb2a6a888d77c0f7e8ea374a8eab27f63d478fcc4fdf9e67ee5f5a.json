@@ -1,8 +1,8 @@
 {
   "agent": "DQN.json",
   "env": "ALE_VideoPinball-v5.json",
-  "status": "pending",
+  "status": "success",
   "host": "hydra cluster",
-  "hardware": "gpu",
+  "hardware": "NVIDIA TITAN V",
   "job_id": 251057
 }
