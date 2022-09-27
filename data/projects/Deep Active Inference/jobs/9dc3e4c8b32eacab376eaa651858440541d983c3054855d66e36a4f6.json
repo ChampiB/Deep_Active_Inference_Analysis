@@ -1,8 +1,8 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Venture-v5.json",
-  "status": "running[0:14]",
+  "status": "success",
   "host": "hydra cluster",
-  "hardware": "gpu",
+  "hardware": "NVIDIA TITAN V",
   "job_id": 251050
 }
