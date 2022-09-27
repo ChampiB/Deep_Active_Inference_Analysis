@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Robotank-v5.json",
-  "status": "pending",
+  "status": "running[0:00]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 251142
