@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Robotank-v5.json",
-  "status": "running[0:41]",
+  "status": "running[0:45]",
   "host": "hydra cluster",
   "hardware": "NVIDIA TITAN V",
   "job_id": 251086
