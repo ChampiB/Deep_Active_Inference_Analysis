@@ -162,7 +162,7 @@ class JobStatusFrame(tk.Frame):
 
         # Cancel job on cluster
         if "job_id" in job_json.keys():
-            if job_json["status"] == "pending" or job_json["status"].startwith("running"):
+            if job_json["status"] == "pending" or job_json["status"].startswith("running"):
                 ServerSSH(**job_json).cancel_job(job_json["job_id"])
 
         # Remove logging directory
