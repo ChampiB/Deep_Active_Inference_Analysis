@@ -10,14 +10,16 @@ import argparse
 from gui.AnalysisConfig import AnalysisConfig
 import datetime
 import torch
+from gui.json.Job import Job
 
 
-def training_loop(agent, env, logging_file):
+def training_loop(agent, env, logging_file, window):
     """
     Implement the training loop
     :param agent: the agent to train
     :param env: the environment to train
     :param logging_file: the file in which to log the agent performance
+    :param window: the analysis window if the training is performed locally, None otherwise
     """
     # Create the replay buffer
     buffer = ReplayBuffer()
@@ -25,7 +27,8 @@ def training_loop(agent, env, logging_file):
     # Retrieve the initial observation from the environment
     obs = env.reset()
     total_rewards = 0
-    for i in range(1000000):
+    i = 0
+    while i < 1000 and not (window is not None and window.stop_training): # 000
         # Select an action
         action = agent.step(obs)
 
@@ -51,19 +54,19 @@ def training_loop(agent, env, logging_file):
         # Reset the environment when a trial ends
         if done:
             obs = env.reset()
+        i += 1
 
     # Close the environment
     env.close()
-
-    # Success!
-    print("Agent trained successfully!", flush=True)
+    return window is not None and window.stop_training
 
 
-def train(agent_file, env_file):
+def train(agent_filename, env_filename, window=None):
     """
     Train the agent on the environment
-    :param agent_file: the path to the agent file
-    :param env_file: the path to the environment file
+    :param agent_filename: the path to the agent file
+    :param env_filename: the path to the environment file
+    :param window: the analysis window if the training is performed locally, None otherwise
     """
     # Set the project seed
     seed = 0
@@ -76,13 +79,13 @@ def train(agent_file, env_file):
     AnalysisConfig.get(data_directory=data_dir)
 
     # Create the environment and apply standard wrappers
-    env_file = open(env_file, "r")
+    env_file = open(env_filename, "r")
     env_json = json.load(env_file)
     env = EnvironmentFactory.create(env_json)
     env = DefaultWrappers.apply(env, image_shape=(1, 64, 64))
 
     # Create the agent
-    agent_file = open(agent_file, "r")
+    agent_file = open(agent_filename, "r")
     agent_json = json.load(agent_file)
     agent = AgentFactory.create(agent_json)
 
@@ -105,7 +108,24 @@ def train(agent_file, env_file):
     job_file.write(hardware)
 
     # Train the agent on the environment (keep track of the training time)
-    training_loop(agent, env, logging_file)
+    stop_training = training_loop(agent, env, logging_file, window)
+
+    # Update the job status
+    if stop_training and window is not None:
+
+        # Get json path
+        path = agent_filename.split("/")
+        project_name = path[-3]
+        agent = path[-1]
+        env = env_filename.split("/")[-1]
+
+        # Update the job
+        job = Job(window.filesystem_mutex, agent, env, project_name)
+        job.update("status", "crashed")
+        window.stop_training = False
+        exit(0)
+    else:
+        print("Agent trained successfully!", flush=True)
 
     # Keep track of the ending time
     job_file.write(f"{datetime.datetime.now()}\n")

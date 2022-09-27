@@ -6,9 +6,6 @@ class HostFactory:
     A class allowing the creation of hosts, e.g. LocalComputer or ServerSSH
     """
 
-    conf = AnalysisConfig.instance
-    hosts_list = conf.get_all_classes(conf.hosts_directory + "impl/", "hosts.impl.")
-
     @staticmethod
     def create(key, params):
         """
@@ -17,4 +14,6 @@ class HostFactory:
         :param params: the host parameters
         :return: the created host
         """
-        return HostFactory.hosts_list[key](**params)
+        conf = AnalysisConfig.instance
+        hosts_list = conf.get_all_classes(conf.hosts_directory + "impl/", "hosts.impl.")
+        return hosts_list[key](**params)

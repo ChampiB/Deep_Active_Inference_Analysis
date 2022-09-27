@@ -21,6 +21,8 @@ class ButtonFactory:
         :param command: the button's command
         :return: the created label
         """
+        if ButtonFactory.conf is None:
+            ButtonFactory.conf = AnalysisConfig.instance
         if theme == "dark":
             return ButtonFactory.create_dark_button(parent, image, text, command, font_size)
         if theme == "light":

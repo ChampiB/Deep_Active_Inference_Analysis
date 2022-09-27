@@ -20,6 +20,8 @@ class LabelFactory:
         :param font_size: the text font size
         :return: the created label
         """
+        if LabelFactory.conf is None:
+            LabelFactory.conf = AnalysisConfig.instance
         if theme == "dark":
             return LabelFactory.create_dark_label(parent, text, image, font_size)
         if theme == "gray":

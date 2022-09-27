@@ -1,10 +1,9 @@
 import json
 import os
-import time
-
 from git import Repo
-from threading import Thread
-from gui.AnalysisConfig import AnalysisConfig
+from threading import Thread, Lock
+from gui.DataStorage import DataStorage
+from gui.json.Job import Job
 from hosts.HostInterface import HostInterface
 from paramiko import SSHClient, AutoAddPolicy
 
@@ -23,14 +22,15 @@ class ServerSSH(HostInterface):
         :param repository_path: the path to the repository on the server
         :param kwargs: the remaining arguments
         """
-        self.conf = AnalysisConfig.instance
+        self.conf = DataStorage.get("conf")
+        self.window = DataStorage.get("window")
         self.server_name = server_name
         self.username = username
         self.hostname = hostname
         self.repository_path = repository_path
         if self.repository_path[-1] != "/":
             self.repository_path += "/"
-        self.locked = False
+        self.mutex = Lock()
 
     def update_repository(self):
         """
@@ -89,9 +89,8 @@ class ServerSSH(HostInterface):
         :param env: the environment
         :param project_name: the name of the project for which the agent is trained
         """
-        while self.locked:
-            time.sleep(0.5)
-        self.locked = True
+        # Make sure only on task is executed at the same time
+        self.mutex.acquire()
 
         # Save agent and environment names
         agent_name = agent
@@ -108,23 +107,10 @@ class ServerSSH(HostInterface):
         client.connect(hostname=self.hostname, username=self.username, port=22)
 
         # Check if job should be re-run
-        json_path = self.get_job_json_path(agent, env, project_name)
-        if os.path.exists(json_path):
-            job = json.load(open(json_path, "r"))
-            values = self.execute(client, f"squeue | grep {job['job_id']}", return_stdout=True)
-            if len(values["stdout"]) != 0:
-                print(f"Job {job['job_id']} is still running.")
-                self.locked = False
-                return
-            values = self.execute(
-                client,
-                f"cat {self.repository_path}slurm-{job['job_id']}.out | grep 'Agent trained successfully!'",
-                return_stdout=True
-            )
-            if len(values["stdout"]) != 0:
-                print(f"Job {job['job_id']} finished successfully.")
-                self.locked = False
-                return
+        job = Job(self.window.filesystem_mutex, agent, env, project_name)
+        if not job.can_be_restarted(self, client):
+            self.mutex.release()
+            return
 
         # Start the job
         self.setup_ssh_server(client)
@@ -138,31 +124,18 @@ class ServerSSH(HostInterface):
             f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} \"{agent}\" \"{env}\"",
             return_stdout=True
         )
-        print(
-            f"cd {self.repository_path} &&"
-            f"source '{self.repository_path}/venv/bin/activate' &&"
-            f"sbatch -p gpu --mem=10G --gres-flags=disable-binding --gres=gpu {training_script} \"{agent}\" \"{env}\""
-        )
+        job_id = values["stdout"][0].split(" ")[-1]
 
         # Save job in file
-        job_id = values["stdout"][0].split(" ")[-1]
-        try:
-            job_id = int(job_id)
-        except Exception as e:
-            print(e)
-        file = open(json_path, mode="w+")
-        json.dump({
-            "agent": agent_name,
-            "env": env_name,
-            "status": "pending",
+        Job.create_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
             "host": self.server_name,
             "hardware": "gpu",
             "job_id": job_id
-        }, file, indent=2)
+        })
 
         # Close client
         client.close()
-        self.locked = False
+        self.mutex.release()
 
     @staticmethod
     def refresh_job(job_json, project_name):
@@ -173,7 +146,7 @@ class ServerSSH(HostInterface):
         :return: the updated job json
         """
         # Get host
-        conf = AnalysisConfig.instance
+        conf = DataStorage.get("conf")
         host = conf.servers[job_json["host"]]
 
         # Open SSH connection
@@ -201,12 +174,16 @@ class ServerSSH(HostInterface):
             f"cat {host['repository_path']}/slurm-{job_json['job_id']}.out | grep 'GPU:'",
             return_stdout=True
         )
-        job_json["hardware"] = values["stdout"][0].split(" ")[1] if len(values["stdout"]) != 0 else "gpu"
+        hardware = values["stdout"][0].replace("GPU: ", "").replace("\n", "") if len(values["stdout"]) != 0 else "gpu"
+        job_json["hardware"] = hardware
 
         # Save job on filesystem
-        json_path = HostInterface.get_job_json_path(job_json["agent"], job_json["env"], project_name)
-        file = open(json_path, mode="w")
-        json.dump(job_json, file, indent=2)
+        json_path = Job.get_json_path(job_json["agent"], job_json["env"], project_name)
+        mutex = DataStorage.get("window").filesystem_mutex
+        mutex.acquire()
+        with open(json_path, mode="w") as file:
+            json.dump(job_json, file, indent=2)
+        mutex.release()
         return job_json
 
     @staticmethod

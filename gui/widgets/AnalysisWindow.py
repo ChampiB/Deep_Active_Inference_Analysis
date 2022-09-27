@@ -1,5 +1,10 @@
+import queue
+import time
+from concurrent.futures import ThreadPoolExecutor as Pool
+from threading import Lock
 import tkinter as tk
-from gui.AnalysisConfig import AnalysisConfig
+from gui.DataStorage import DataStorage
+from gui.json.Job import Job
 
 
 class AnalysisWindow(tk.Tk):
@@ -15,7 +20,7 @@ class AnalysisWindow(tk.Tk):
         super().__init__()
 
         # Store the configuration
-        self.conf = AnalysisConfig.instance
+        self.conf = DataStorage.get("conf")
 
         # Display window in full-screen mode
         self.attributes("-fullscreen", True)
@@ -30,6 +35,12 @@ class AnalysisWindow(tk.Tk):
         self.pages_class = self.conf.get_all_classes(self.conf.pages_directory, "gui.pages.")
         self.pages = {}
         self.current_page = None
+
+        # Local training attributes
+        self.tasks = queue.Queue()
+        self.pool = Pool(max_workers=1)
+        self.filesystem_mutex = Lock()
+        self.stop_training = True
 
     def show_page(self, page_name, parameters=None):
         """
@@ -61,4 +72,19 @@ class AnalysisWindow(tk.Tk):
         Close the window
         :param event: the event that triggered the call to the function (not used)
         """
+        # Stop tasks pending in the queue
+        while not self.tasks.empty():
+            agent, env, project_name = self.tasks.get()
+            print(agent, env, project_name)
+            job = Job(self.filesystem_mutex, agent, env, project_name)
+            job.update("status", "crashed")
+
+        # Stop the task currently running
+        if not self.stop_training:
+            self.stop_training = True
+        while self.stop_training:
+            time.sleep(0.2)
+
+        # Destroy the window
         self.destroy()
+
