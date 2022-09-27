@@ -3,6 +3,5 @@
   "env": "ALE_SpaceInvaders-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251027
+  "hardware": "gpu"
 }
