@@ -1,8 +1,0 @@
-{
-  "agent": "CHMM[efe].json",
-  "env": "ALE_Tennis-v5.json",
-  "status": "running[0:20]",
-  "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251063
-}

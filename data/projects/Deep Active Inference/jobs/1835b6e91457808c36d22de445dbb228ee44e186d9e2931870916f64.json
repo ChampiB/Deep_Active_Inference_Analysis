@@ -1,8 +1,0 @@
-{
-  "agent": "DQN.json",
-  "env": "ALE_Robotank-v5.json",
-  "status": "success",
-  "host": "hydra cluster",
-  "hardware": "Tesla P100-PCIE-16GB",
-  "job_id": 251051
-}

@@ -1,8 +1,0 @@
-{
-  "agent": "CHMM[efe].json",
-  "env": "ALE_Seaquest-v5.json",
-  "status": "running[1:23]",
-  "host": "hydra cluster",
-  "hardware": "NVIDIA TITAN V",
-  "job_id": 251060
-}

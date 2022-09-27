@@ -1,8 +1,0 @@
-{
-  "agent": "CHMM[efe].json",
-  "env": "ALE_Robotank-v5.json",
-  "status": "running[1:08]",
-  "host": "hydra cluster",
-  "hardware": "Tesla P100-PCIE-16GB",
-  "job_id": 251061
-}
