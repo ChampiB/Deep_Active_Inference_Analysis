@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Zaxxon-v5.json",
-  "status": "running[0:02]",
+  "status": "running[0:06]",
   "host": "hydra cluster",
   "hardware": "gpu",
   "job_id": 251090
