@@ -75,7 +75,6 @@ class AnalysisWindow(tk.Tk):
         # Stop tasks pending in the queue
         while not self.tasks.empty():
             agent, env, project_name = self.tasks.get()
-            print(agent, env, project_name)
             job = Job(self.filesystem_mutex, agent, env, project_name)
             job.update("status", "crashed")
 
