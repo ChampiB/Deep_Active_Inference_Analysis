@@ -3,6 +3,5 @@
   "env": "ALE_VideoPinball-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251020
+  "hardware": "gpu"
 }
