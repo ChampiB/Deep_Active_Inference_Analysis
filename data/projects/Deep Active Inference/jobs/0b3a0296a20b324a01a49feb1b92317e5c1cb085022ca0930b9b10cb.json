@@ -1,0 +1,7 @@
+{
+  "agent": "CHMM[efe].json",
+  "env": "ALE_WizardOfWor-v5.json",
+  "status": "pending",
+  "host": "hydra cluster",
+  "hardware": "gpu"
+}
