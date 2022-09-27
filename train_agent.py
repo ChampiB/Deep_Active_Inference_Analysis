@@ -28,7 +28,7 @@ def training_loop(agent, env, logging_file, window):
     obs = env.reset()
     total_rewards = 0
     i = 0
-    while i < 1000 and not (window is not None and window.stop_training): # 000
+    while i < 1000000 and not (window is not None and window.stop_training):
         # Select an action
         action = agent.step(obs)
 
