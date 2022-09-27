@@ -27,8 +27,12 @@ class Job:
         # Load job from file system
         self.json_path = Job.get_json_path(agent, env, project_name)
         mutex.acquire()
-        with open(self.json_path, "r") as file:
-            self.job = json.load(file)
+        try:
+            with open(self.json_path, "r") as file:
+                self.job = json.load(file)
+        except Exception as e:
+            print(e)
+            self.job = None
         mutex.release()
 
     def update(self, key, value, save=True):
