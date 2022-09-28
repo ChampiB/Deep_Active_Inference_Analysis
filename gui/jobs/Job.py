@@ -28,6 +28,8 @@ class Job:
         self.json_path = Job.get_json_path(agent, env, project_name)
         mutex.acquire()
         try:
+            if not os.path.exists(self.json_path):
+                raise Exception()
             with open(self.json_path, "r") as file:
                 self.json = json.load(file)
         except Exception as e:

@@ -3,7 +3,7 @@ import os
 from git import Repo
 from threading import Thread, Lock
 from gui.DataStorage import DataStorage
-from gui.json.Job import Job
+from gui.jobs.Job import Job
 from hosts.HostInterface import HostInterface
 from paramiko import SSHClient, AutoAddPolicy
 

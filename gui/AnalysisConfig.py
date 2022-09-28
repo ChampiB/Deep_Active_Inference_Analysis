@@ -29,6 +29,7 @@ class AnalysisConfig:
         self.hosts_directory = data_directory + "../hosts/"
         self.home_directory = os.path.expanduser('~')
         self.ssh_key_directory = self.home_directory + "/.ssh/"
+        self.logging_directory = data_directory + "/logging/"
 
         # Load the colors configuration
         colors_file = open(self.config_directory + "colors.json", "r")

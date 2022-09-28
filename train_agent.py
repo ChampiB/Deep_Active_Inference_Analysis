@@ -10,7 +10,7 @@ import argparse
 from gui.AnalysisConfig import AnalysisConfig
 import datetime
 import torch
-from gui.json.Job import Job
+from gui.jobs.Job import Job
 
 
 def training_loop(agent, env, logging_file, window):
@@ -25,10 +25,16 @@ def training_loop(agent, env, logging_file, window):
     buffer = ReplayBuffer()
 
     # Retrieve the initial observation from the environment
+    stopping_key = "/".join([x + ".json" for x in logging_file.name.split("/")[-3:-1]])
     obs = env.reset()
     total_rewards = 0
     i = 0
     while i < 1000000 and not (window is not None and window.stop_training):
+        # Stop local job if requested
+        if window is not None and stopping_key in window.jobs_to_stop:
+            window.jobs_to_stop.remove(stopping_key)
+            exit(0)
+
         # Select an action
         action = agent.step(obs)
 
@@ -112,7 +118,6 @@ def train(agent_filename, env_filename, window=None):
 
     # Update the job status
     if stop_training and window is not None:
-
         # Get json path
         path = agent_filename.split("/")
         project_name = path[-3]

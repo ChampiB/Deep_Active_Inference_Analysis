@@ -1,10 +1,10 @@
 import queue
 import time
-from concurrent.futures import ThreadPoolExecutor as Pool
 from threading import Lock
 import tkinter as tk
 from gui.DataStorage import DataStorage
-from gui.json.Job import Job
+from gui.jobs.Job import Job
+from concurrent.futures import ThreadPoolExecutor as Pool
 
 
 class AnalysisWindow(tk.Tk):
@@ -38,10 +38,11 @@ class AnalysisWindow(tk.Tk):
 
         # Local training attributes
         self.tasks = queue.Queue()
-        self.pool = Pool(max_workers=1)
+        self.pool = Pool()
         self.filesystem_mutex = Lock()
         self.stop_training = False
         self.jobs = []
+        self.jobs_to_stop = []
 
     def show_page(self, page_name, parameters=None):
         """

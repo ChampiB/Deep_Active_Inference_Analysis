@@ -2,7 +2,7 @@ import threading
 from datetime import datetime
 import train_agent
 from gui.DataStorage import DataStorage
-from gui.json.Job import Job
+from gui.jobs.Job import Job
 from hosts.HostInterface import HostInterface
 
 
@@ -26,7 +26,10 @@ class LocalComputer(HostInterface):
         :param job: the jib to run
         """
         # Check whether to start the task
-        if self.window.stop_training:
+        stopping_key = job.json["env"] + "/" + job.json["agent"]
+        stopping_key = stopping_key.replace("ALE_", "")
+        if self.window.stop_training or stopping_key in self.window.jobs_to_stop:
+            self.window.jobs_to_stop.remove(stopping_key)
             return
 
         # Get agent and environment files
