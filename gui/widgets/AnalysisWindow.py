@@ -4,7 +4,7 @@ from threading import Lock
 import tkinter as tk
 from gui.DataStorage import DataStorage
 from gui.jobs.Job import Job
-from concurrent.futures import ThreadPoolExecutor as Pool
+from concurrent.futures import ProcessPoolExecutor as Pool
 
 
 class AnalysisWindow(tk.Tk):

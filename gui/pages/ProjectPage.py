@@ -115,6 +115,13 @@ class ProjectPage(tk.Frame):
         os.mkdir(project_dir + "/environments")
         os.mkdir(project_dir + "/jobs")
 
+        # Create the project file
+        project_file = open(project_dir + "/project.json", "w+")
+        json.dump({
+            "description": "",
+            "host": "local computer"
+        }, project_file)
+
         return default_name
 
     def refresh(self, project=None):

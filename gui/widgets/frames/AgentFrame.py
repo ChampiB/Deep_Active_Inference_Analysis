@@ -15,7 +15,7 @@ class AgentFrame(tk.Frame):
     A class allowing to create a new agent
     """
 
-    def __init__(self, parent, file):
+    def __init__(self, parent, file=None):
         """
         Constructor
         :param parent: parent widget

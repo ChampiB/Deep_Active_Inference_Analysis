@@ -143,6 +143,7 @@ class EnvironmentFrame(tk.Frame):
         self.reward_label = None
         self.image_env_state = None
         self.stop_env = False
+        self.keys_frame = None
 
         self.reward = 0
         self.image_main_thread = None
@@ -229,8 +230,9 @@ class EnvironmentFrame(tk.Frame):
         # Create the label used to display the environment's observations
         self.canvas_frame = tk.Frame(self.canvas, background=self.conf.colors["dark_gray"])
         self.canvas_frame.rowconfigure(0, weight=1)
-        self.canvas_frame.rowconfigure(1, weight=15)
-        self.canvas_frame.rowconfigure(2, weight=1)
+        self.canvas_frame.rowconfigure(1, weight=10)
+        self.canvas_frame.rowconfigure(2, weight=5)
+        self.canvas_frame.rowconfigure(3, weight=1)
         self.image_label = LabelFactory.create(self.canvas_frame, theme="dark")
         self.image_label.grid(row=1, column=1)
         self.reward_label = LabelFactory.create(
@@ -239,6 +241,11 @@ class EnvironmentFrame(tk.Frame):
         self.reward_label.grid(row=2, column=1)
         x = self.canvas.winfo_width() / 2
         y = self.canvas.winfo_height() / 2
+
+        # Create a frame used to display useful keys
+        self.keys_frame = tk.Frame(self.canvas_frame, background=self.conf.colors["dark_gray"])
+        self.keys_frame.grid(row=1, column=2, padx=20, pady=20)
+
         self.canvas_frame_window = self.canvas.create_window(x, y, window=self.canvas_frame, anchor=tk.CENTER)
 
         # Keep track of last key pressed
@@ -248,7 +255,7 @@ class EnvironmentFrame(tk.Frame):
         self.bind("<<RequireLoadImage>>", self.update_frame)
 
         # Play environment in background
-        threading.Thread(target=self.play_env_in_background, args=(env,)).start()
+        threading.Thread(target=self.play_env_in_background, args=(env, )).start()
 
     def update_frame(self, event=None):
         """
@@ -265,11 +272,20 @@ class EnvironmentFrame(tk.Frame):
         Allow the user to play the environment by launching a thread in background
         :param env: the environment to run
         """
-
         # Load environment
         env = EnvironmentFactory.create(env)
+
+        # Get the keys to actions mapping
         keys_to_actions = env.get_keys_to_action()
         keys_to_actions = self.pre_process(keys_to_actions)
+
+        # Display useful keys
+        keys = [pygame.key.name(key) for key in keys_to_actions.keys() if key is not None]
+        label = LabelFactory.create(self.keys_frame, theme="dark", text=f"Useful keys:")
+        label.grid(row=0, column=0)
+        for i, key in enumerate(keys):
+            label = LabelFactory.create(self.keys_frame, theme="dark", text=f"    {key}")
+            label.grid(row=i + 1, column=0)
 
         # Retrieve the initial observation from the environment.
         obs = env.reset()
@@ -336,4 +352,3 @@ class EnvironmentFrame(tk.Frame):
             else:
                 tmp[keys] = value
         return tmp
-
