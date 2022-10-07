@@ -1,17 +1,10 @@
 import json
-import os
-import shutil
 import threading
 import tkinter as tk
-from tkinter import ttk
-from datetime import datetime
 from gui.DataStorage import DataStorage
 from gui.jobs.Job import Job
-from gui.widgets.modern.ButtonFactory import ButtonFactory
-from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.Scrollbar import Scrollbar
 from hosts.HostFactory import HostFactory
-from hosts.impl.ServerSSH import ServerSSH
 
 
 class AnalysisFrame(tk.Frame):
@@ -101,10 +94,12 @@ class AnalysisFrame(tk.Frame):
         self.update_scrollbar()
 
     def display_quantitative_metrics(self):
+        print("display_quantitative_metrics")
         # TODO
         pass
 
     def display_qualitative_metrics(self):
+        print("display_qualitative_metrics")
         # TODO
         pass
 
