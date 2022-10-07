@@ -1,8 +1,8 @@
 {
   "agent": "HMM.json",
   "env": "ALE_Tennis-v5.json",
-  "status": "crashed",
+  "status": "pending",
   "host": "hydra cluster",
-  "hardware": "NVIDIA TITAN V",
-  "job_id": 251313
+  "hardware": "gpu",
+  "job_id": 251318
 }
