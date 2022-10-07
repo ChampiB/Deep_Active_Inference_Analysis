@@ -1,8 +1,8 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Robotank-v5.json",
-  "status": "crashed",
+  "status": "pending",
   "host": "hydra cluster",
-  "hardware": "Tesla P100-PCIE-16GB",
-  "job_id": 251308
+  "hardware": "gpu",
+  "job_id": 251312
 }
