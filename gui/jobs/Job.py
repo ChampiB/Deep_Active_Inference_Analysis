@@ -171,7 +171,7 @@ class Job:
             self.update("status", "crashed")
 
     @staticmethod
-    def open_on_ssh_server(mutex, agent, env, project_name, params):
+    def create_on_ssh_server(mutex, agent, env, project_name, params):
         """
         Create a new job on the ssh server
         :param mutex: the mutex to lock when accessing the file system

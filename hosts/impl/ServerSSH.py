@@ -118,7 +118,7 @@ class ServerSSH(HostInterface):
             return
 
         # Create new job
-        job = Job.open_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
+        job = Job.create_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
             "host": self.server_name,
             "hardware": "gpu",
         })
