@@ -1,8 +1,7 @@
 {
   "agent": "CHMM[efe].json",
-  "env": "ALE_TimePilot-v5.json",
+  "env": "ALE_SpaceInvaders-v5.json",
   "status": "pending",
   "host": "hydra cluster",
-  "hardware": "gpu",
-  "job_id": 251327
+  "hardware": "gpu"
 }
