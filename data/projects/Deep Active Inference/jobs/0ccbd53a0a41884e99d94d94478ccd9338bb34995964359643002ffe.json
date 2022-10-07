@@ -1,8 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Tennis-v5.json",
-  "status": "running",
+  "status": "crashed",
   "host": "local computer",
-  "hardware": "cpu",
-  "start_time": "10/07/2022, 10:41:45"
+  "hardware": "cpu"
 }

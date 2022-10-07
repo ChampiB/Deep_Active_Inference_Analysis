@@ -6,6 +6,7 @@ from gui.DataStorage import DataStorage
 from gui.jobs.Job import Job
 from hosts.HostInterface import HostInterface
 from paramiko import SSHClient, AutoAddPolicy
+from scp import SCPClient
 
 
 class ServerSSH(HostInterface):
@@ -87,20 +88,8 @@ class ServerSSH(HostInterface):
         Cancel a job
         :param job_id: the index of the job to cancel
         """
-        client = self.create_client()
+        client = self.open_ssh_connection(self.conf, self.hostname, self.username)
         self.execute(client, f"scancel {job_id}")
-
-    def create_client(self):
-        """
-        Create an ssh client
-        :return: the client
-        """
-        client = SSHClient()
-        client.load_host_keys(self.conf.ssh_key_directory + "known_hosts")
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(AutoAddPolicy())
-        client.connect(hostname=self.hostname, username=self.username, port=22)
-        return client
 
     def run_task(self, agent, env, project_name):
         """
@@ -120,7 +109,7 @@ class ServerSSH(HostInterface):
         self.update_repository()
 
         # Open SSH connection
-        client = self.create_client()
+        client = self.open_ssh_connection(self.conf, self.hostname, self.username)
 
         # Check if job should be re-run
         job = Job(self.window.filesystem_mutex, agent, env, project_name)
@@ -129,7 +118,7 @@ class ServerSSH(HostInterface):
             return
 
         # Create new job
-        job = Job.create_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
+        job = Job.open_on_ssh_server(self.window.filesystem_mutex, agent_name, env_name, project_name, {
             "host": self.server_name,
             "hardware": "gpu",
         })
@@ -168,11 +157,7 @@ class ServerSSH(HostInterface):
         host = conf.servers[job_json["host"]]
 
         # Open SSH connection
-        client = SSHClient()
-        client.load_host_keys(conf.ssh_key_directory + "known_hosts")
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(AutoAddPolicy())
-        client.connect(hostname=host["hostname"], username=host["username"], port=22)
+        client = ServerSSH.open_ssh_connection(conf, host["hostname"], host["username"])
 
         # Update job json
         values = ServerSSH.execute(client, f"squeue | grep {job_json['job_id']}", return_stdout=True)
@@ -205,6 +190,22 @@ class ServerSSH(HostInterface):
         return job_json
 
     @staticmethod
+    def open_ssh_connection(conf, hostname, username):
+        """
+        Open an ssh connection
+        :param conf: the AnalysisConfig class
+        :param hostname: the hostname of the SSH server
+        :param username: the username to use for the connection
+        :return: the SSH client
+        """
+        client = SSHClient()
+        client.load_host_keys(conf.ssh_key_directory + "known_hosts")
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(AutoAddPolicy())
+        client.connect(hostname=hostname, username=username, port=22)
+        return client
+
+    @staticmethod
     def execute(client, command, return_stdout=False):
         """
         Execute a command and close all channel returned by the command call
@@ -230,3 +231,21 @@ class ServerSSH(HostInterface):
         :param project_name: the name of the project for which the agent is trained
         """
         Thread(target=self.run_task, args=(agent, env, project_name)).start()
+
+    def retrieve_analysis_files(self, job_json):
+        """
+        Retrieve the analysis files
+        :param job_json: the json describing the job whose analysis must be retrieved
+        """
+        # Open a SSH connection
+        client = self.open_ssh_connection(self.conf, self.hostname, self.username)
+        client = SCPClient(client.get_transport())
+
+        # Retrieve the analysis files
+        env = job_json['env'].replace('_', '/').replace('.json', '')
+        agent = job_json['agent'].replace('.json', '')
+        remote_path = f"{self.repository_path}/data/logging/{env}/{agent}/"
+        local_path = f"{self.conf.data_directory}/logging/{env}/{agent}/"
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+        client.get(remote_path, local_path, recursive=True)

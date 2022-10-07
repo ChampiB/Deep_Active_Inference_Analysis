@@ -33,3 +33,10 @@ class LocalComputer(HostInterface):
         agent = project_name + f"/agents/{agent}"
         env = project_name + f"/environments/{env}"
         self.window.pool.submit(job, agent=agent, env=env, projects_directory=self.conf.projects_directory)
+
+    def retrieve_analysis_files(self, job_json):
+        """
+        Retrieve the analysis files
+        :param job_json: the json describing the job whose analysis must be retrieved
+        """
+        pass

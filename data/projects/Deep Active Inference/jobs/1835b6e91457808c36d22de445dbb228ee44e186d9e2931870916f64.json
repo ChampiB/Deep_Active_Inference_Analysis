@@ -1,7 +1,7 @@
 {
   "agent": "DQN.json",
   "env": "ALE_Robotank-v5.json",
-  "status": "pending",
+  "status": "crashed",
   "host": "local computer",
   "hardware": "cpu"
 }

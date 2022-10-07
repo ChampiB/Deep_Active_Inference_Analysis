@@ -17,6 +17,14 @@ class HostInterface(abc.ABC):
         """
         ...
 
+    @abc.abstractmethod
+    def retrieve_analysis_files(self, job_json):
+        """
+        Retrieve the analysis files
+        :param job_json: the json describing the job whose analysis must be retrieved
+        """
+        ...
+
     @staticmethod
     def get_device():
         """

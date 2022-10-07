@@ -10,6 +10,7 @@ from gui.jobs.Job import Job
 from gui.widgets.modern.ButtonFactory import ButtonFactory
 from gui.widgets.modern.LabelFactory import LabelFactory
 from gui.widgets.modern.Scrollbar import Scrollbar
+from hosts.HostFactory import HostFactory
 from hosts.impl.ServerSSH import ServerSSH
 
 
@@ -91,7 +92,7 @@ class AnalysisFrame(tk.Frame):
 
         # Retrieve the analysis files
         for job_json in jobs_json:
-            self.get_relevant_files(job_json)
+            self.retrieve_analysis_files(job_json)
 
         # Display jobs analysis
         self.display_quantitative_metrics()
@@ -100,25 +101,26 @@ class AnalysisFrame(tk.Frame):
         self.update_scrollbar()
 
     def display_quantitative_metrics(self):
+        # TODO
         pass
 
     def display_qualitative_metrics(self):
+        # TODO
         pass
 
-    def get_relevant_files(self, job_json):
+    def retrieve_analysis_files(self, job_json):
+        """
+        Retrieve the files required for the analysis of the job
+        :param job_json: the job whose files must be retrieved
+        """
         # Get the host
-        # TODO get job's host
-        server_name = self.server_combobox.get()
-
+        server_name = job_json["host"]
         host_json = self.conf.servers[server_name]
         host_json["server_name"] = server_name
         host = HostFactory.create(host_json["class"], host_json)
 
-        # TODO retrieve files
         # Train the agents on the environment
-        for agent in agents:
-            for env in environments:
-                host.train(agent, env, self.parent.project_name)
+        host.retrieve_analysis_files(job_json)
 
     def update_scrollbar(self):
         """

@@ -7,3 +7,4 @@ pygame
 paramiko
 gym[atari,accept-rom-license]
 autorom[accept-rom-license]
+scp
