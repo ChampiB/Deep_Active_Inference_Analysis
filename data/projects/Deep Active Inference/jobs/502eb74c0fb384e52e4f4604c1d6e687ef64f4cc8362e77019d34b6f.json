@@ -1,8 +1,8 @@
 {
   "agent": "CHMM[efe].json",
   "env": "ALE_TimePilot-v5.json",
-  "status": "crashed",
+  "status": "pending",
   "host": "hydra cluster",
-  "hardware": "NVIDIA TITAN V",
-  "job_id": 251327
+  "hardware": "gpu",
+  "job_id": 251329
 }
