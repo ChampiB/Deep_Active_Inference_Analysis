@@ -1,0 +1,7 @@
+{
+  "agent": "DQN.json",
+  "env": "ALE_Robotank-v5.json",
+  "status": "pending",
+  "host": "hydra cluster",
+  "hardware": "gpu"
+}
