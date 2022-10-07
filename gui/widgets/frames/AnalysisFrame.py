@@ -158,6 +158,10 @@ class AnalysisFrame(tk.Frame):
             photo = ImageTk.PhotoImage(Image.open(image_file))
             label = LabelFactory.create(self.canvas_frame, image=photo, theme="dark", font_size=14)
             label.grid(row=self.current_row, column=self.current_column, columnspan=3, pady=5, sticky="nsew")
+            self.current_row += 1
+            if self.current_row > 3:
+                self.current_row = 1
+                self.current_column += 1
             self.images.append(photo)
         # TODO if data_present:
         # TODO     self.is_data_missing = False
