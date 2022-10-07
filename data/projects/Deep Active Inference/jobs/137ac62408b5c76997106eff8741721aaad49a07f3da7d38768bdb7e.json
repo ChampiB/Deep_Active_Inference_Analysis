@@ -1,8 +1,0 @@
-{
-  "agent": "CHMM[efe].json",
-  "env": "ALE_SpaceInvaders-v5.json",
-  "status": "crashed",
-  "host": "hydra cluster",
-  "hardware": "NVIDIA TITAN V",
-  "job_id": 251326
-}
