@@ -10,33 +10,25 @@ import argparse
 from gui.AnalysisConfig import AnalysisConfig
 import datetime
 import torch
-from gui.jobs.Job import Job
 
 
-def training_loop(agent, env, logging_file, window):
+def training_loop(agent, env, logging_file):
     """
     Implement the training loop
     :param agent: the agent to train
     :param env: the environment to train
     :param logging_file: the file in which to log the agent performance
-    :param window: the analysis window if the training is performed locally, None otherwise
     """
     # Create the replay buffer
     buffer = ReplayBuffer()
 
     # Retrieve the initial observation from the environment
-    stopping_key = "/".join([x + ".json" for x in logging_file.name.split("/")[-3:-1]])
     obs = env.reset()
     total_rewards = 0
     i = 0
-    while i < 1000000 and not (window is not None and window.stop_training):
-        # Stop local job if requested
-        if window is not None and stopping_key in window.jobs_to_stop:
-            window.jobs_to_stop.remove(stopping_key)
-            exit(0)
-
+    while i < 1000000:
         # Select an action
-        action = agent.step(obs)
+        action = agent.step(obs, i)
 
         # Execute the action in the environment
         old_obs = obs
@@ -47,15 +39,16 @@ def training_loop(agent, env, logging_file, window):
 
         # Perform one iteration of training (if needed)
         if len(buffer) >= 1000:
-            agent.learn(logging_file)
+            agent.learn(logging_file, buffer, i)
 
         # Save the agent (if needed)
         if i % 10000 == 0:
-            agent.save(os.path.dirname(logging_file.name))
+            agent.save(os.path.dirname(logging_file.name), i)
 
         # Monitor total rewards
         total_rewards += reward
-        logging_file.write(f"{total_rewards}\n")
+        if i % 10 == 0:
+            logging_file.write(f",{total_rewards}\n")
 
         # Reset the environment when a trial ends
         if done:
@@ -64,15 +57,13 @@ def training_loop(agent, env, logging_file, window):
 
     # Close the environment
     env.close()
-    return window is not None and window.stop_training
 
 
-def train(agent_filename, env_filename, window=None):
+def train(agent_filename, env_filename):
     """
     Train the agent on the environment
     :param agent_filename: the path to the agent file
     :param env_filename: the path to the environment file
-    :param window: the analysis window if the training is performed locally, None otherwise
     """
     # Set the project seed
     seed = 0
@@ -93,7 +84,7 @@ def train(agent_filename, env_filename, window=None):
     # Create the agent
     agent_file = open(agent_filename, "r")
     agent_json = json.load(agent_file)
-    agent = AgentFactory.create(agent_json)
+    agent = AgentFactory.create(agent_json, env.action_space.n)
 
     # Create the logging file
     logging_dir = data_dir + f"logging/{env_json['name']}/{agent_json['name']}/"
@@ -102,7 +93,7 @@ def train(agent_filename, env_filename, window=None):
     logging_file = open(logging_dir + "results.csv", "w+")
 
     # Write the csv header
-    logging_file.write("vfe,reward\n" if agent.is_model_based() else "reward\n")
+    logging_file.write("loss,reward\n" if agent.is_model_based() else "reward\n")
 
     # Keep track of the starting time
     job_file = open(logging_dir + "job.csv", "w+")
@@ -114,22 +105,10 @@ def train(agent_filename, env_filename, window=None):
     job_file.write(hardware)
 
     # Train the agent on the environment (keep track of the training time)
-    stop_training = training_loop(agent, env, logging_file, window)
+    training_loop(agent, env, logging_file)
 
     # Update the job status
-    if stop_training and window is not None:
-        # Get json path
-        path = agent_filename.split("/")
-        project_name = path[-3]
-        agent = path[-1]
-        env = env_filename.split("/")[-1]
-
-        # Update the job
-        job = Job(window.filesystem_mutex, agent, env, project_name)
-        job.update("status", "crashed")
-        exit(0)
-    else:
-        print("Agent trained successfully!", flush=True)
+    print("Agent trained successfully!", flush=True)
 
     # Keep track of the ending time
     job_file.write(f"{datetime.datetime.now()}\n")
@@ -143,7 +122,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Keep track of GPU used
-    print(f"GPU: {torch.cuda.get_device_name(torch.cuda.current_device())}", flush=True)
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(torch.cuda.current_device())}", flush=True)
 
     # Train the agent
     train(args.agent_file, args.env_file)

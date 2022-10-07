@@ -1,10 +1,9 @@
-import queue
-import time
 from threading import Lock
 import tkinter as tk
+
+from gui.AnalysisAssets import AnalysisAssets
 from gui.DataStorage import DataStorage
-from gui.jobs.Job import Job
-from concurrent.futures import ProcessPoolExecutor as Pool
+from gui.jobs.JobPool import JobPool
 
 
 class AnalysisWindow(tk.Tk):
@@ -18,6 +17,10 @@ class AnalysisWindow(tk.Tk):
         """
         # Call parent constructor
         super().__init__()
+
+        # Set window's title and icon
+        self.title(string='Analysis Tool')
+        self.wm_iconphoto(False, AnalysisAssets.get("analysis_button", subsample=1))
 
         # Store the configuration
         self.conf = DataStorage.get("conf")
@@ -37,12 +40,8 @@ class AnalysisWindow(tk.Tk):
         self.current_page = None
 
         # Local training attributes
-        self.tasks = queue.Queue()
-        self.pool = Pool()
+        self.pool = JobPool()
         self.filesystem_mutex = Lock()
-        self.stop_training = False
-        self.jobs = []
-        self.jobs_to_stop = []
 
     def show_page(self, page_name, parameters=None):
         """
@@ -74,22 +73,8 @@ class AnalysisWindow(tk.Tk):
         Close the window
         :param event: the event that triggered the call to the function (not used)
         """
-        # Stop tasks pending in the queue
-        while not self.tasks.empty():
-            agent, env, project_name = self.tasks.get()
-            job = Job(self.filesystem_mutex, agent, env, project_name)
-            job.update("status", "crashed")
-
-        # Stop the task currently running
-        if self.jobs:
-            self.stop_training = True
-            ready_to_close = False
-            while not ready_to_close:
-                ready_to_close = True
-                for job in self.jobs:
-                    if job.running():
-                        ready_to_close = False
-                time.sleep(0.2)
+        # Stop all tasks
+        self.pool.stop()
 
         # Destroy the window
         self.destroy()

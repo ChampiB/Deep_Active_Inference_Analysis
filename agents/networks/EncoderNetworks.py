@@ -8,7 +8,7 @@ class Conv84(nn.Module):
     Class implementing a convolutional encoder for 84 by 84 images
     """
 
-    def __init__(self, n_states, image_shape):
+    def __init__(self, n_states, image_shape, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables
@@ -78,7 +78,7 @@ class Conv64(nn.Module):
     Class implementing a convolutional encoder for 64 by 64 images
     """
 
-    def __init__(self, n_states, image_shape):
+    def __init__(self, n_states, image_shape, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables
@@ -141,7 +141,7 @@ class ConvDAIMC(nn.Module):
     Class implementing a convolutional encoder for 64 by 64 images
     """
 
-    def __init__(self, n_states, image_shape):
+    def __init__(self, n_states, image_shape, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables

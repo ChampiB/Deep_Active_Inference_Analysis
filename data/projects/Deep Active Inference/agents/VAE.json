@@ -1,0 +1,21 @@
+{
+  "name": "VAE",
+  "module": "agents.impl.VAE",
+  "class": "VAE",
+  "encoder": {
+    "module": "agents.networks.EncoderNetworks",
+    "class": "Conv64"
+  },
+  "decoder": {
+    "module": "agents.networks.DecoderNetworks",
+    "class": "Conv64"
+  },
+  "strategy": {
+    "module": "agents.strategies.RandomActions",
+    "class": "RandomActions"
+  },
+  "queue_capacity": "50000",
+  "beta": "1.0",
+  "vfe_lr": "0.0001",
+  "n_states": "10"
+}

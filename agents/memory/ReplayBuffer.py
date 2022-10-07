@@ -15,13 +15,14 @@ Experience = collections.namedtuple('Experience', field_names=['obs', 'action', 
 #
 class ReplayBuffer:
 
-    def __init__(self, capacity=10000):
+    def __init__(self, capacity=10000, batch_size=32):
         """
         Constructor
         :param capacity: the number of experience the buffer can store
         """
         self.__device = HostInterface.get_device()
         self.__buffer = collections.deque(maxlen=capacity)
+        self.batch_size = batch_size
 
     def __len__(self):
         """
@@ -47,7 +48,7 @@ class ReplayBuffer:
         """
         return cat([unsqueeze(tensor, 0) for tensor in tensor_list])
 
-    def sample(self, batch_size):
+    def sample(self, batch_size=None):
         """
         Sample a batch from the replay buffer
         :param batch_size: the size of the batch to sample
@@ -59,8 +60,8 @@ class ReplayBuffer:
         - done: whether the environment stop after performing the actions
         - next_observations: the observations received after performing the actions
         """
-
         # Sample a batch from the replay buffer.
+        batch_size = self.batch_size if batch_size is None else batch_size
         indices = np.random.choice(len(self.__buffer), batch_size, replace=False)
         obs, actions, rewards, done, next_obs = zip(*[self.__buffer[idx] for idx in indices])
 

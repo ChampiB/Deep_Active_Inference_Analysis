@@ -7,7 +7,7 @@ class LinearRelu3x100(nn.Module):
     Class implementing a network modeling a state-action policy
     """
 
-    def __init__(self, n_states, n_actions):
+    def __init__(self, n_states, n_actions, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables
@@ -39,7 +39,7 @@ class LinearRelu4x100(nn.Module):
     Class implementing a network modeling the posterior over actions given a state
     """
 
-    def __init__(self, n_states, n_actions):
+    def __init__(self, n_states, n_actions, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables
@@ -73,7 +73,7 @@ class Conv64(nn.Module):
     Implement the policy network that compute the q-values
     """
 
-    def __init__(self, images_shape, n_actions):
+    def __init__(self, images_shape, n_actions, **_):
         """
         Constructor
         :param images_shape: the shape of the input images

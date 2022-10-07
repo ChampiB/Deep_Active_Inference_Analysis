@@ -2,7 +2,6 @@ import json
 import os
 import shutil
 import threading
-import time
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
@@ -44,7 +43,7 @@ class JobStatusFrame(tk.Frame):
         # Load delete button image
         self.delete_button_img = self.assets.get("red_delete_button")
 
-        # Change background color and configure AgentFrame
+        # Change background color and configure JobStatusFrame
         self.config(background=self.conf.colors["dark_gray"])
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=120)
@@ -71,7 +70,6 @@ class JobStatusFrame(tk.Frame):
         threading.Thread(target=self.display_jobs, args=(agents, environments)).start()
 
         self.scrollbar.bind_wheel(self, recursive=True)
-        self.agent_form = None
         self.canvas.bind('<Configure>', self.frame_width)
 
     def display_jobs(self, agents, environments):
@@ -105,10 +103,7 @@ class JobStatusFrame(tk.Frame):
         # Display jobs
         for job_json in jobs_json:
             if job_json is None:
-                print("Nonnne")
                 continue
-            else:
-                print(f"Nooooot Nonnne! {job_json}")
 
             self.display_job(row_index, job_json)
             row_index += 1
@@ -163,37 +158,28 @@ class JobStatusFrame(tk.Frame):
         # Stop the job if running and remove logging directory (for local jobs)
         if "job_id" not in job_json.keys():
             # Stop the running job
-            stopping_key = job_json["env"] + "/" + job_json["agent"]
-            self.window.jobs_to_stop.append(stopping_key.replace("ALE_", ""))
-            if job_json["status"] == "pending" or job_json["status"].startswith("running"):
-                while stopping_key in self.window.jobs_to_stop:
-                    time.sleep(0.2)
+            local_path = job_json["env"] + "/" + job_json["agent"]
+            self.window.pool.stop_job(job_json)
 
             # Remove logging directory for local jobs
-            stopping_key = stopping_key.replace(".json", "")
+            stopping_key = local_path.replace(".json", "")
             stopping_key = stopping_key.replace("ALE_", "ALE/")
             directory = self.conf.logging_directory + stopping_key + "/"
             if os.path.exists(directory):
-                print(f"delete {directory}")
                 shutil.rmtree(directory)
-            else:
-                print(f"not delete {directory}")
 
         # Delete job file
         project_name = self.project_page.project_name
         json_path = Job.get_json_path(job_json["agent"], job_json["env"], project_name)
         if os.path.exists(json_path):
-            print(f"delete {json_path}")
             os.remove(json_path)
-        else:
-            print(f"not delete {json_path}")
 
         # Cancel job on cluster
         if "job_id" in job_json.keys():
             if job_json["status"] == "pending" or job_json["status"].startswith("running"):
                 server_name = job_json["host"]
                 host_json = self.conf.servers[server_name]
-                host_json["server_name "] = server_name
+                host_json["server_name"] = server_name
                 ServerSSH(**host_json).cancel_job(job_json["job_id"])
 
         self.project_page.show_frame("JobStatusFrame", {"agents": self.agents, "environments": self.environments})

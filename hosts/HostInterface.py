@@ -24,3 +24,13 @@ class HostInterface(abc.ABC):
         :return: the device on which computation should be performed
         """
         return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    @staticmethod
+    def to_device(models):
+        """
+        Send the models to the device, i.e. gpu if available or cpu otherwise.
+        :param models: the list of model to send to the device.
+        :return: nothinh
+        """
+        for model in models:
+            model.to(HostInterface.get_device())

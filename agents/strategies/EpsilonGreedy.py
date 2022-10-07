@@ -15,9 +15,9 @@ class EpsilonGreedy:
         :param epsilon_end: the final value of epsilon
         :param epsilon_decay: how slowly should epsilon decay? The bigger, the slower
         """
-        self.epsilon_start = epsilon_start
-        self.epsilon_end = epsilon_end
-        self.epsilon_decay = epsilon_decay
+        self.epsilon_start = float(epsilon_start)
+        self.epsilon_end = float(epsilon_end)
+        self.epsilon_decay = float(epsilon_decay)
 
     def __iter__(self):
         """

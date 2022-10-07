@@ -76,7 +76,9 @@ class TopBarFrame(tk.Frame):
 
         # Add the analysis button
         if display_analysis_button:
-            self.analysis_button = ButtonFactory.create(self, image=self.assets.get("analysis_button"))
+            self.analysis_button = ButtonFactory.create(
+                self, image=self.assets.get("analysis_button"), command=self.analysis
+            )
             self.analysis_button.grid(row=0, column=col_index, padx=3, pady=3, ipadx=3, ipady=3)
             self.analysis_button_tip = ToolTip(self.analysis_button, f"Run analysis")
             col_index += 1
@@ -106,6 +108,25 @@ class TopBarFrame(tk.Frame):
         self.project_renaming_frame = None
         self.server_configuration_frame = None
 
+    def analysis(self):
+        """
+        Analyse the agents on the environments
+        """
+        # Hide the tip
+        self.analysis_button_tip.hidetip()
+
+        # Get the agents and environments
+        agents, environments = self.get_selected_agents_and_envs()
+
+        # Check that there is at least one agent and one environment
+        if len(agents) == 0 or len(environments) == 0:
+            print("At least on agent and one environment is required for the analysis to be successful.")
+            self.parent.show_frame("AnalysisFrame")
+            return
+
+        # Display job status frame
+        self.parent.show_frame("AnalysisFrame", {"agents": agents, "environments": environments})
+
     def train(self):
         """
         Train the agents on the environments
@@ -114,13 +135,7 @@ class TopBarFrame(tk.Frame):
         self.run_button_tip.hidetip()
 
         # Get the agents and environments
-        agents = []
-        environments = []
-        for entry_type, entry_file in self.parent.project_tree.selected_entries:
-            if entry_type == "Agents":
-                agents.append(entry_file)
-            if entry_type == "Environments":
-                environments.append(entry_file)
+        agents, environments = self.get_selected_agents_and_envs()
 
         # Check that there is at least one agent and one environment
         if len(agents) == 0 or len(environments) == 0:
@@ -141,6 +156,20 @@ class TopBarFrame(tk.Frame):
 
         # Display job status frame
         self.parent.show_frame("JobStatusFrame", {"agents": agents, "environments": environments})
+
+    def get_selected_agents_and_envs(self):
+        """
+        Getter
+        :return: the selected agents and environments
+        """
+        agents = []
+        environments = []
+        for entry_type, entry_file in self.parent.project_tree.selected_entries:
+            if entry_type == "Agents":
+                agents.append(entry_file)
+            if entry_type == "Environments":
+                environments.append(entry_file)
+        return agents, environments
 
     def go_to_project_selection_page(self):
         """

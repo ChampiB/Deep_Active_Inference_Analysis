@@ -1,0 +1,20 @@
+{
+  "name": "DQN",
+  "module": "agents.impl.DQN",
+  "class": "DQN",
+  "policy": {
+    "module": "agents.networks.PolicyNetworks",
+    "class": "Conv64"
+  },
+  "strategy": {
+    "module": "agents.strategies.EpsilonGreedy",
+    "class": "EpsilonGreedy",
+    "epsilon_start": "0.9",
+    "epsilon_end": "0.05",
+    "epsilon_decay": "1000"
+  },
+  "discount_factor": "0.9",
+  "n_steps_between_synchro": "10",
+  "queue_capacity": "50000",
+  "q_network_lr": "0.0001"
+}

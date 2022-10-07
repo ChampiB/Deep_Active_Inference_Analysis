@@ -9,7 +9,7 @@ class LinearRelu3x100(nn.Module):
     Class implementing a network modeling the temporal transition between hidden state
     """
 
-    def __init__(self, n_states, n_actions):
+    def __init__(self, n_states, n_actions, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables
@@ -47,7 +47,7 @@ class LinearReluDropout4x512(nn.Module):
     Class implementing a network modeling the temporal transition between hidden state
     """
 
-    def __init__(self, n_states, n_actions):
+    def __init__(self, n_states, n_actions, **_):
         """
         Constructor
         :param n_states: the number of components of the Gaussian over latent variables

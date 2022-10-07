@@ -10,10 +10,11 @@ class AgentFactory:
     agents = None
 
     @staticmethod
-    def create(json_agent):
+    def create(json_agent, n_actions):
         """
         Create an instance of the agent described in the json
         :param json_agent: the json
+        :param n_actions: the number of actions
         :return: the agent
         """
         if AgentFactory.conf is None:
@@ -22,4 +23,4 @@ class AgentFactory:
             conf = AgentFactory.conf
             AgentFactory.agents = conf.get_all_classes(conf.agents_directory + "impl/", "agents.impl.")
         agent_class = json_agent["class"]
-        return AgentFactory.agents[agent_class](json_agent)
+        return AgentFactory.agents[agent_class](json_agent, n_actions)
