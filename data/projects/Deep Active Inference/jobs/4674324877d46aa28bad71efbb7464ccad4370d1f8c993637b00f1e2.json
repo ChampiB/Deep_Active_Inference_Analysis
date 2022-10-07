@@ -1,0 +1,7 @@
+{
+  "agent": "VAE.json",
+  "env": "ALE_TimePilot-v5.json",
+  "status": "pending",
+  "host": "hydra cluster",
+  "hardware": "gpu"
+}
