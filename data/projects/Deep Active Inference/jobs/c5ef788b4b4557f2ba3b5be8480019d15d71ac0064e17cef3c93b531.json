@@ -1,8 +1,0 @@
-{
-  "agent": "HMM.json",
-  "env": "ALE_Robotank-v5.json",
-  "status": "crashed",
-  "host": "local computer",
-  "hardware": "cpu",
-  "start_time": "10/07/2022, 11:17:58"
-}
