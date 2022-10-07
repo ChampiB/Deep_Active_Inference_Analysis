@@ -8,3 +8,5 @@ paramiko
 gym[atari,accept-rom-license]
 autorom[accept-rom-license]
 scp
+matplotlib
+pandas

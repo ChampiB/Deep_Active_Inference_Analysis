@@ -245,7 +245,7 @@ class ServerSSH(HostInterface):
         env = job_json['env'].replace('_', '/').replace('.json', '')
         agent = job_json['agent'].replace('.json', '')
         remote_path = f"{self.repository_path}/data/logging/{env}/{agent}/"
-        local_path = f"{self.conf.data_directory}/logging/{env}/{agent}/"
+        local_path = f"{self.conf.logging_directory}/{env}/"
         if not os.path.exists(local_path):
             os.makedirs(local_path)
         client.get(remote_path, local_path, recursive=True)
