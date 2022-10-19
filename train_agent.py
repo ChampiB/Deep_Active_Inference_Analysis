@@ -42,13 +42,14 @@ def training_loop(agent, env, logging_file):
             agent.learn(logging_file, buffer, i)
 
         # Save the agent (if needed)
-        if i % 10000 == 0:
-            agent.save(os.path.dirname(logging_file.name), i)
+        if i % 100 == 0:  # 00
+            agent.save(os.path.dirname(logging_file.name), i, env)
 
         # Monitor total rewards
         total_rewards += reward
         if i % 10 == 0:
             logging_file.write(f",{total_rewards}\n")
+            logging_file.flush()
 
         # Reset the environment when a trial ends
         if done:
@@ -103,6 +104,7 @@ def train(agent_filename, env_filename):
     # Keep track of hardware
     hardware = f"gpu[{torch.cuda.get_device_name()}," if torch.cuda.is_available() else "cpu,"
     job_file.write(hardware)
+    job_file.flush()
 
     # Train the agent on the environment (keep track of the training time)
     training_loop(agent, env, logging_file)

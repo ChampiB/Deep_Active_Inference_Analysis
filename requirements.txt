@@ -9,4 +9,5 @@ gym[atari,accept-rom-license]
 autorom[accept-rom-license]
 scp
 matplotlib
+torchvision
 pandas

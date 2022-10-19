@@ -1,8 +1,10 @@
 1.a Allow the user to analyse the agents policies by saving every 10K training iteration a trial made by the agent (the user must be able to choose the time granularity)
-1.b Allow the user to analyse the representation learned by the agents by showing examples of reconstruction of sequences of images
-1.c Allow the user to look at the amount of rewards gathered by the agent
-1.d Allow the user to look at the variational free energy of the agent
+1.b Make sure the HMM and CHMM are generating sequences of actions
+1.c Remove flickering of images in analysis frame
+1.d Why is there not VFE displayed
 1.e Should the images and video be saved on the file system for faster reloading?
+1.f Allow scrolling through images of reconstruction display
+1.g Allow refresh of only one set of images in reconstruction display
 
 2. (bonus) Allow the user to compute the representational similarities between the layers of two sets of agents
 3. (bonus) Allow the user to visualise the variance of the latent spaces for different agents

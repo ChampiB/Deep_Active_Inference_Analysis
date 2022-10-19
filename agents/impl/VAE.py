@@ -1,3 +1,6 @@
+from PIL import Image
+from torchvision.utils import save_image
+import os
 import torch
 from torch import zeros_like
 from agents.AgentInterface import AgentInterface
@@ -33,7 +36,7 @@ class VAE(AgentInterface):
         self.queue_capacity = int(json_agent["queue_capacity"])
         self.beta = float(json_agent["beta"])
         self.vfe_lr = float(json_agent["vfe_lr"])
-        HostInterface.to_device([self.encoder, self.decoder, self.transition])
+        HostInterface.to_device([self.encoder, self.decoder])
         self.optimizer = Optimizers.get_adam([self.encoder, self.decoder], self.vfe_lr)
         self.n_actions = n_actions
 
@@ -47,12 +50,33 @@ class VAE(AgentInterface):
         quality = torch.zeros([1, self.n_actions]).to(HostInterface.get_device())
         return self.strategy.select(quality, steps_done)
 
-    def save(self, directory, steps_done):
+    def save(self, directory, steps_done, env):
         """
         Save the agent on the file system
         :param directory: the directory in which to save the agent
         :param steps_done: the number of training steps done
+        :param env: the environment to use for gathering reconstructed images and policy demonstration
         """
+        # Gather the observations and create image directory
+        observations, real_observations = self.collect_observations(env)
+        image_directory = directory + f"/{steps_done}/"
+        if not os.path.exists(image_directory):
+            os.makedirs(image_directory)
+
+        # Save policy
+        for i, obs in enumerate(real_observations):
+            policy_file = image_directory + f"real-obs-{i}.png"
+            Image.fromarray(obs).save(policy_file)
+
+        # Save reconstructed images
+        for i, obs in enumerate(observations):
+            policy_file = image_directory + f"obs-{i}.png"
+            save_image(obs, policy_file)
+            mean, log_var = self.encoder(obs.unsqueeze(axis=0))
+            obs = self.decoder(math_fc.re_parameterize(mean, log_var))
+            policy_file = image_directory + f"reconstructed-obs-{i}.png"
+            save_image(obs, policy_file)
+
         # Create directories and files if they do not exist.
         checkpoint_file = directory + f"/checkpoint-{steps_done}.pt"
         self.create_dir_and_file(checkpoint_file)
@@ -116,6 +140,7 @@ class VAE(AgentInterface):
         # Display debug information, if needed.
         if steps_done % 10 == 0:
             logging_file.write(str(vfe_loss.item()))
+            logging_file.flush()
         return vfe_loss
 
     def is_model_based(self):

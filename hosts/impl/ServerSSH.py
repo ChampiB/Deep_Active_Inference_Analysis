@@ -6,7 +6,7 @@ from gui.DataStorage import DataStorage
 from gui.jobs.Job import Job
 from hosts.HostInterface import HostInterface
 from paramiko import SSHClient, AutoAddPolicy
-from scp import SCPClient
+from scp import SCPClient, SCPException
 
 
 class ServerSSH(HostInterface):
@@ -248,4 +248,7 @@ class ServerSSH(HostInterface):
         local_path = f"{self.conf.logging_directory}/{env}/"
         if not os.path.exists(local_path):
             os.makedirs(local_path)
-        client.get(remote_path, local_path, recursive=True)
+        try:
+            client.get(remote_path, local_path, recursive=True)
+        except SCPException as e:
+            print(e)

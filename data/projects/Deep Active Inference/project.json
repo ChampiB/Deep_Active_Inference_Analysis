@@ -1,4 +1,1 @@
-{
-  "description": "A project to study active inference agents",
-  "host": "hydra cluster"
-}
+{"description": "", "host": "local computer"}

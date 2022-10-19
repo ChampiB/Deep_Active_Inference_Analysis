@@ -1,3 +1,5 @@
+from PIL import Image
+import os
 from copy import deepcopy
 import torch
 from torch import unsqueeze, nn
@@ -48,12 +50,24 @@ class DQN(AgentInterface):
         # Select an action to perform in the environment.
         return self.strategy.select(self.policy(obs), steps_done)
 
-    def save(self, directory, steps_done):
+    def save(self, directory, steps_done, env):
         """
         Save the agent on the file system
         :param directory: the directory in which to save the agent
         :param steps_done: the number of training steps done
+        :param env: the environment to use for gathering reconstructed images and policy demonstration
         """
+        # Gather the observations and create image directory
+        observations, real_observations = self.collect_observations(env)
+        image_directory = directory + f"/{steps_done}/"
+        if not os.path.exists(image_directory):
+            os.makedirs(image_directory)
+
+        # Save policy
+        for i, obs in enumerate(real_observations):
+            policy_file = image_directory + f"real-obs-{i}.png"
+            Image.fromarray(obs).save(policy_file)
+
         # Create directories and files if they do not exist.
         checkpoint_file = directory + f"/checkpoint-{steps_done}.pt"
         self.create_dir_and_file(checkpoint_file)
@@ -100,17 +114,16 @@ class DQN(AgentInterface):
 
     def compute_loss(self, logging_file, obs, actions, rewards, done, next_obs, steps_done):
         """
-        Compute the loss function used to train the policy network.
+        Compute the loss function used to train the policy network
         :param logging_file: the file in which metrics should be saved
-        :param obs: the observations made at time t.
-        :param actions: the actions performed at time t.
-        :param rewards: the rewards received at time t + 1.
-        :param done: did the episode ended after performing action a_t?
-        :param next_obs: the observations made at time t + 1.
+        :param obs: the observations made at time t
+        :param actions: the actions performed at time t
+        :param rewards: the rewards received at time t + 1
+        :param done: whether the episode ended after performing action a_t
+        :param next_obs: the observations made at time t + 1
         :param steps_done: the number of training steps done
         :return: the policy loss.
         """
-
         # Compute the q-values of the current state and action as predicted by the policy network, i.e. Q(s_t, a_t).
         policy_prediction = self.policy(obs).gather(dim=1, index=unsqueeze(actions.to(torch.int64), dim=1))
 
@@ -130,6 +143,7 @@ class DQN(AgentInterface):
         # Print debug information, if needed.
         if steps_done % 10 == 0:
             logging_file.write(str(loss.item()))
+            logging_file.flush()
         return loss
 
     def is_model_based(self):

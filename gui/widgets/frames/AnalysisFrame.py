@@ -1,12 +1,16 @@
+from math import nan
 import matplotlib.pyplot as plt
 import pandas as pd
+from pandas.errors import EmptyDataError
 import json
-import threading
 import tkinter as tk
 from gui.DataStorage import DataStorage
 from gui.jobs.Job import Job
 from gui.widgets.modern.LabelFactory import LabelFactory
+from gui.widgets.modern.PolicyDisplay import PolicyDisplay
+from gui.widgets.modern.ReconstructionDisplay import ReconstructionDisplay
 from gui.widgets.modern.Scrollbar import Scrollbar
+from gui.widgets.modern.Slider import Slider
 from hosts.HostFactory import HostFactory
 from PIL import Image, ImageTk
 
@@ -58,17 +62,24 @@ class AnalysisFrame(tk.Frame):
 
         # Create the canvas frame
         self.canvas_frame = tk.Frame(self.canvas, background=self.conf.colors["dark_gray"])
-        self.canvas_frame.columnconfigure(0, weight=1)
         self.canvas_frame.rowconfigure(1, weight=1)
         self.canvas_frame_window = self.canvas.create_window(0, 0, window=self.canvas_frame, anchor='nw')
-        for i in range(5):
+        for i in range(2):
             self.canvas_frame.columnconfigure(i, weight=1, uniform="true")
 
         # Display the jobs
         self.images = []
         self.current_row = 0
-        self.current_column = 1
-        threading.Thread(target=self.display_analysis, args=(agents, environments)).start()
+        color = 'white'
+        plt.rcParams['text.color'] = color
+        plt.rcParams['axes.labelcolor'] = color
+        plt.rcParams['xtick.color'] = color
+        plt.rcParams['ytick.color'] = color
+        plt.rcParams['legend.frameon'] = 'False'
+        self.policy_display = PolicyDisplay(self.canvas_frame)
+        self.reconstruction_display = ReconstructionDisplay(self.canvas_frame)
+        self.slider = Slider(self.canvas_frame, [self.policy_display, self.reconstruction_display], height=35)
+        self.display_analysis(agents, environments)
 
         self.scrollbar.bind_wheel(self, recursive=True)
         self.canvas.bind('<Configure>', self.frame_width)
@@ -95,20 +106,32 @@ class AnalysisFrame(tk.Frame):
 
         # Retrieve the analysis files
         for job_json in jobs_json:
-            self.retrieve_analysis_files(job_json)
+            if job_json is not None:
+                self.retrieve_analysis_files(job_json)
 
         # Display jobs analysis
         self.is_data_missing = True
         self.display_quantitative_metrics(jobs_json)
         self.update_scrollbar()
-        self.display_qualitative_metrics()
+        self.display_qualitative_metrics(jobs_json)
         self.update_scrollbar()
         if self.is_data_missing:
             label = LabelFactory.create(
                 self.canvas_frame, text="No data is currently available...", theme="dark", font_size=14
             )
             padding = self.winfo_height()
-            label.grid(row=1, column=1, columnspan=3, pady=padding / 2, sticky="nsew")
+            label.grid(row=0, column=0, columnspan=2, pady=max(padding / 2, 25), sticky="nsew")
+        self.grid_remove_if_empty()
+
+    def grid_remove_if_empty(self):
+        """
+        Call grid forget if reconstruction and/or policy display are empty
+        """
+        if self.reconstruction_display.empty:
+            self.reconstruction_display.grid_remove()
+        if self.policy_display.empty:
+            self.policy_display.grid_remove()
+        self.update_scrollbar()
 
     def display_quantitative_metrics(self, jobs_json):
         """
@@ -118,16 +141,20 @@ class AnalysisFrame(tk.Frame):
         # Collect the variational free energy and reward
         vfe = {}
         reward = {}
-        every_n_rows = 0
+        every_n_rows = 1
         for job_json in jobs_json:
+            if job_json is None:
+                continue
             env = job_json['env'].replace('_', '/').replace('.json', '')
             agent = job_json['agent'].replace('.json', '')
-            df = pd.read_csv(f"{self.conf.logging_directory}/{env}/{agent}/results.csv")
-            n_rows = len(df.index) / 400
+            try:
+                df = pd.read_csv(f"{self.conf.logging_directory}/{env}/{agent}/results.csv")
+            except (FileNotFoundError, EmptyDataError) as e:
+                print(e)
+                continue
+            n_rows = int(len(df.index) / 400)
             if n_rows > every_n_rows:
                 every_n_rows = n_rows
-            print(every_n_rows)
-            print(df.index)
             if job_json["env"] not in vfe.keys():
                 vfe[job_json["env"]] = {}
             vfe[job_json["env"]][job_json["agent"]] = df["loss"]
@@ -136,42 +163,93 @@ class AnalysisFrame(tk.Frame):
             reward[job_json["env"]][job_json["agent"]] = df["reward"]
 
         # Only keep relevant rows
+        for env, agents in vfe.items():
+            for agent, df in agents.items():
+                vfe[env][agent] = df.iloc[::every_n_rows].head(400)
         for env, agents in reward.items():
             for agent, df in agents.items():
-                vfe[env][agent] = df.iloc[::every_n_rows, :]
-        for env, agents in reward.items():
-            for agent, df in agents.items():
-                reward[env][agent] = df.iloc[::every_n_rows, :]
+                reward[env][agent] = df.iloc[::every_n_rows].head(400)
 
-        # Draw variational free energy
+        # Draw variational free energy and reward
+        self.display_variational_free_energy(every_n_rows, vfe)
+        self.current_row = 0
+        self.display_reward(every_n_rows, reward)
+
+    def display_reward(self, every_n_rows, reward):
+        """
+        Display the reward gathered by the agent
+        :param every_n_rows: the number of rows (time steps) between two VFE values
+        :param reward: the reward values
+        """
+        xs = [every_n_rows * i for i in range(400)]
+        image_file = f"{self.conf.data_directory}/saved_figure.png"
+        for env, agents in reward.items():
+            plt.clf()
+            for agent, ys in agents.items():
+                ys = ys if len(ys) == 400 else pd.concat([ys, pd.Series([nan] * (400 - len(ys)))])
+                plt.plot(xs, ys, label=agent)
+            plt.xlabel("Training Iterations")
+            plt.ylabel("Rewards")
+            plt.title(f"Rewards on {env.replace('.json', '')} environments")
+            plt.legend()
+            plt.savefig(image_file, transparent=True)
+            photo = ImageTk.PhotoImage(Image.open(image_file))
+            label = LabelFactory.create(self.canvas_frame, image=photo, theme="dark")
+            label.grid(row=self.current_row, column=1, pady=5, sticky="nsew")
+            self.is_data_missing = False
+            self.current_row += 1
+            self.images.append(photo)
+
+    def display_variational_free_energy(self, every_n_rows, vfe):
+        """
+        Display the variational free energy
+        :param every_n_rows: the number of rows (time steps) between two VFE values
+        :param vfe: the variational free energy values
+        """
         xs = [every_n_rows * i for i in range(400)]
         image_file = f"{self.conf.data_directory}/saved_figure.png"
         for env, agents in vfe.items():
             plt.clf()
             for agent, ys in agents.items():
+                ys = ys if len(ys) == 400 else pd.concat([ys, pd.Series([nan] * (400 - len(ys)))])
                 plt.plot(xs, ys, label=agent)
             plt.xlabel("Training Iterations")
             plt.ylabel("Variational Free Energy")
-            plt.title(f"The agents' variational free energy on {env}")
+            plt.title(f"Variational free energy on {env.replace('.json', '')} environments")
             plt.legend()
             plt.savefig(image_file, transparent=True)
             photo = ImageTk.PhotoImage(Image.open(image_file))
-            label = LabelFactory.create(self.canvas_frame, image=photo, theme="dark", font_size=14)
-            label.grid(row=self.current_row, column=self.current_column, columnspan=3, pady=5, sticky="nsew")
+            label = LabelFactory.create(self.canvas_frame, image=photo, theme="dark")
+            label.grid(row=self.current_row, column=0, pady=5, sticky="nsew")
+            self.is_data_missing = False
             self.current_row += 1
-            if self.current_row > 3:
-                self.current_row = 1
-                self.current_column += 1
             self.images.append(photo)
-        # TODO if data_present:
-        # TODO     self.is_data_missing = False
 
-    def display_qualitative_metrics(self):
-        print("display_qualitative_metrics")
-        # if data_present:
-        #     self.is_data_missing = False
-        # TODO
-        pass
+    def display_qualitative_metrics(self, jobs_json):
+        """
+        Display the policy taken by the agent and the reconstructed images if the agent is model based
+        :param jobs_json: the json of the jobs whose metrics should be displayed
+        """
+        # Position widget on the screen
+        self.slider.grid(row=self.current_row, column=0, columnspan=2, sticky='new', pady=10)
+        self.current_row += 1
+        self.policy_display.grid(row=self.current_row, column=0, columnspan=2, sticky='new', pady=10)
+        self.current_row += 1
+        self.reconstruction_display.grid(row=self.current_row, column=0, columnspan=2, sticky='new', pady=10)
+        self.current_row += 1
+
+        # Update jobs
+        self.policy_display.set_jobs(jobs_json)
+        self.reconstruction_display.set_jobs(jobs_json)
+
+        # Get slider's value and display corresponding images
+        value = self.slider.get()
+        if self.policy_display.set_value(value) is False:
+            self.is_data_missing = False
+        if self.reconstruction_display.set_value(value) is False:
+            self.is_data_missing = False
+        if self.is_data_missing:
+            self.slider.grid_remove()
 
     def retrieve_analysis_files(self, job_json):
         """
@@ -216,4 +294,4 @@ class AnalysisFrame(tk.Frame):
         """
         Stop all tasks running in background
         """
-        pass
+        self.policy_display.stop()

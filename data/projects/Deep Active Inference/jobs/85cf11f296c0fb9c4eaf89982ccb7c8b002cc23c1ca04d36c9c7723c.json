@@ -1,0 +1,8 @@
+{
+  "agent": "VAE.json",
+  "env": "ALE_Tennis-v5.json",
+  "status": "crashed",
+  "host": "local computer",
+  "hardware": "cpu",
+  "start_time": "10/19/2022, 14:11:20"
+}

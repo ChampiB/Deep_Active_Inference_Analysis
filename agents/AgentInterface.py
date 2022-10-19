@@ -26,12 +26,40 @@ class AgentInterface(abc.ABC):
         """
         pass
 
+    def collect_observations(self, env):
+        """
+        Collect observations from the environment
+        :param env: the environment
+        :return: the pre-processed and real observations
+        """
+        obs = env.reset()
+        observations = [obs]
+        real_obs = env.unwrapped.render(mode='rgb_array')
+        real_observations = [real_obs]
+        i = 0
+        done = False
+        while done is False and i < 1000:
+            # Select an action
+            action = self.step(obs, i)
+
+            # Execute the action in the environment
+            obs, reward, done, _ = env.step(action)
+            observations.append(obs)
+            real_obs = env.unwrapped.render(mode='rgb_array')
+            real_observations.append(real_obs)
+
+            # Increase index
+            i += 1
+
+        return observations, real_observations
+
     @abc.abstractmethod
-    def save(self, directory, steps_done):
+    def save(self, directory, steps_done, env):
         """
         Save the agent on the file system
         :param directory: the directory in which to save the agent
         :param steps_done: the number of training steps done
+        :param env: the environment to use for gathering reconstructed images and policy demonstration
         """
         pass
 
