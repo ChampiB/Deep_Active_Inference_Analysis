@@ -16,11 +16,13 @@ class VAE(AgentInterface):
     A Variational Auto-Encoder agent
     """
 
-    def __init__(self, json_agent, n_actions):
+    def __init__(self, json_agent, n_actions, *args, **kwargs):
         """
         Constructor
         :param json_agent: the json describing the agent
         :param n_actions: the number of actions
+        :param args: the remaining (standard) parameters
+        :param kwargs: the remaining (keyword) parameters
         """
         super().__init__("VAE")
         self.n_states = int(json_agent["n_states"])

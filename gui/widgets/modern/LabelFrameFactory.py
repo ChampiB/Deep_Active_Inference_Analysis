@@ -74,7 +74,9 @@ class LabelFrameFactory:
             "Variational free energy learning rate:": ("entry", "vfe_lr", "float"),
             "Critic's learning rate:": ("entry", "critic_lr", "float"),
             "Number of latent dimensions:": ("entry", "n_states", "int"),
-            "Critic's objective:": ("combobox", "critic_objective", ["Reward", "Expected Free Energy"])
+            "Critic's objective:": ("combobox", "critic_objective", ["Reward", "Expected Free Energy"]),
+            "Exploration constant": ("entry", "exp_const", "float"),
+            "Maximum number of planning iterations": ("entry", "max_planning_steps", "int")
         }
 
         # Create networks label frame

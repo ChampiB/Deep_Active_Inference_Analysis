@@ -85,7 +85,7 @@ def train(agent_filename, env_filename):
     # Create the agent
     agent_file = open(agent_filename, "r")
     agent_json = json.load(agent_file)
-    agent = AgentFactory.create(agent_json, env.action_space.n)
+    agent = AgentFactory.create(agent_json, env.action_space.n, env)
 
     # Create the logging file
     logging_dir = data_dir + f"logging/{env_json['name']}/{agent_json['name']}/"

@@ -1,0 +1,8 @@
+{
+  "name": "MiniSprites",
+  "module": "environments.impl.MiniSpritesEnvironment",
+  "class": "MiniSpritesEnvironment",
+  "width": "10",
+  "height": "10",
+  "max_trial_length": "50"
+}
