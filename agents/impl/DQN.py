@@ -15,11 +15,13 @@ class DQN(AgentInterface):
     A Deep Q-Network agent
     """
 
-    def __init__(self, json_agent, n_actions):
+    def __init__(self, json_agent, n_actions, *args, **kwargs):
         """
         Constructor
         :param json_agent: the json describing the agent
         :param n_actions: the number of actions
+        :param args: the remaining (standard) parameters
+        :param kwargs: the remaining (keyword) parameters
         """
         super().__init__("DQN")
         self.n_actions = n_actions

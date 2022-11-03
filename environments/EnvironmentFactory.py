@@ -1,4 +1,5 @@
 import gym
+from environments.impl.MiniSpritesEnvironment import MiniSpritesEnvironment
 from environments.impl.SpritesEnvironment import SpritesEnvironment
 
 
@@ -16,6 +17,8 @@ class EnvironmentFactory:
         """
         if json_env["class"] == "SpritesEnvironment":
             return SpritesEnvironment(json_env)
+        if json_env["class"] == "MiniSpritesEnvironment":
+            return MiniSpritesEnvironment(json_env)
         if json_env["class"] == "OpenAI":
             return gym.make(json_env["name"])
         print(f"Environment '{json_env}' is not supported.")

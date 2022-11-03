@@ -1,0 +1,128 @@
+import json
+import tkinter as tk
+from gui.AnalysisConfig import AnalysisConfig
+from gui.widgets.frames.EnvironmentFrame import EnvironmentFrame
+from gui.widgets.modern.ButtonFactory import ButtonFactory
+from gui.widgets.modern.Entry import Entry
+from gui.widgets.modern.LabelFactory import LabelFactory
+from gui.widgets.modern.LabelFrameFactory import LabelFrameFactory
+
+
+class FormMiniSpritesEnvironment(tk.Frame):
+    """
+    A creation form for a mini dSprites environment
+    """
+
+    def __init__(self, parent, env, file):
+        """
+        Constructor
+        :param parent: the parent widget
+        :param env: the environment that must be displayed or None if a new environment must be created
+        :param file: the file of the environment that must be displayed or None if a new environment must be created
+        """
+        super().__init__(parent)
+        self.conf = AnalysisConfig.instance
+        self.config(background=self.conf.colors["dark_gray"])
+        self.parent = parent.master.master
+        self.project_page = self.parent.master.master.master.master
+        self.env = env
+        self.source_file = file
+
+        # Configure columns weights
+        self.columnconfigure(0, weight=5)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+
+        # Create characteristics label frame
+        self.characteristics = LabelFrameFactory.create(self, text="Characteristics")
+        FormMiniSpritesEnvironment.configure_columns(self.characteristics)
+        self.characteristics.grid(row=0, column=0, pady=15, sticky="nsew", columnspan=3)
+
+        self.width_label = LabelFactory.create(self.characteristics, text="Width:", theme="dark")
+        self.width_label.grid(row=0, column=0, pady=5, padx=5, sticky="nse")
+
+        default_val = 5 if env is None else env["width"]
+        self.width_entry = Entry(self.characteristics, valid_input="int", help_message=default_val)
+        self.width_entry.grid(row=0, column=1, pady=5, padx=5, sticky="nsew")
+
+        self.height_label = LabelFactory.create(self.characteristics, text="Height:", theme="dark")
+        self.height_label.grid(row=1, column=0, pady=(5, 15), padx=5, sticky="nse")
+
+        default_val = 5 if env is None else env["height"]
+        self.height_entry = Entry(self.characteristics, valid_input="int", help_message=default_val)
+        self.height_entry.grid(row=1, column=1, pady=5, padx=5, sticky="nsew")
+
+        self.max_trial_length_label = LabelFactory.create(
+            self.characteristics, text="Maximum number of steps per trials:", theme="dark"
+        )
+        self.max_trial_length_label.grid(row=2, column=0, pady=5, padx=5, sticky="nse")
+
+        default_val = "50" if env is None else env["max_trial_length"]
+        self.max_trial_length_entry = Entry(self.characteristics, valid_input="int", help_message=default_val)
+        self.max_trial_length_entry.grid(row=2, column=1, pady=5, padx=5, sticky="nsew")
+
+        # Create the create/update button
+        text = "Create" if env is None else "Update"
+        self.create_button = ButtonFactory.create(
+            self, text=text, theme="blue", command=self.create_or_update_sprites_env
+        )
+        self.create_button.grid(row=1, column=2, pady=15, ipady=5, ipadx=5, sticky="nsew")
+
+        # Create the play button
+        if env is not None:
+            self.play_button = ButtonFactory.create(self, text="Play", theme="blue", command=self.play)
+            self.play_button.grid(row=1, column=1, pady=15, padx=5, ipady=5, ipadx=5, sticky="nsew")
+
+    @staticmethod
+    def configure_columns(widget):
+        """
+        Configure the widget columns
+        :param widget: the widget
+        """
+        widget.columnconfigure(0, weight=4, uniform="labelframe")
+        widget.columnconfigure(1, weight=4, uniform="labelframe")
+        widget.columnconfigure(2, weight=1, uniform="labelframe")
+
+    def play(self):
+        """
+        Play the environment
+        """
+        env = self.create_or_update_sprites_env()
+        self.parent.play(env)
+
+    def create_or_update_sprites_env(self):
+        """
+        Create the environment file on the file system
+        """
+        # Get environment directory and file name
+        env_name = self.parent.env_name_entry.get()
+        envs_directories = self.conf.projects_directory + self.project_page.project_name + "/environments/"
+        file_name = env_name + ".json"
+
+        # Check if the project exist or not
+        target_file = envs_directories + file_name
+        source_file = target_file if self.source_file is None else self.source_file
+        env_creation = self.source_file is None
+        if not EnvironmentFrame.can_update_be_performed(envs_directories, source_file, target_file, env_creation):
+            return
+
+        # Write the description of the new agent on the filesystem
+        file = open(envs_directories + file_name, "a")
+        env_dic = {
+            "name": env_name,
+            "module": "environments.impl.MiniSpritesEnvironment",
+            "class": "MiniSpritesEnvironment",
+            "width": self.width_entry.get(),
+            "height": self.height_entry.get(),
+            "max_trial_length": self.max_trial_length_entry.get(),
+        }
+        json.dump(env_dic, file, indent=2)
+
+        # Refresh project tree and display empty frame in the project page
+        self.project_page.project_tree.refresh(self.project_page.project_name)
+        return env_dic
+
+    def refresh(self):
+        # Update button text
+        text = "Create" if self.env is None else "Update"
+        self.create_button.config(text=text)

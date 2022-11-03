@@ -1,0 +1,7 @@
+{
+  "name": "BTAI_3MF",
+  "module": "agents.impl.BTAI_3MF",
+  "class": "BTAI_3MF",
+  "exp_const": "2.4",
+  "max_planning_steps": "150"
+}
