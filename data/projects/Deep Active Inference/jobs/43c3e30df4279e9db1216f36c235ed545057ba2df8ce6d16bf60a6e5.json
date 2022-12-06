@@ -1,8 +1,8 @@
 {
   "agent": "BTAI_3MF.json",
   "env": "MiniSprites.json",
-  "status": "crashed",
+  "status": "running",
   "host": "local computer",
   "hardware": "cpu",
-  "start_time": "11/01/2022, 12:48:40"
+  "start_time": "11/30/2022, 11:47:36"
 }

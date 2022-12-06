@@ -1,2 +1,0 @@
-FireResetWrapper was not applied to the environment.
-'MiniSpritesEnvironment' object has no attribute 's_sizes'

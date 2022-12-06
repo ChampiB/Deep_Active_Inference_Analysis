@@ -13,10 +13,12 @@ class Node:
         self.neighbours = list(neighbours)
         self.in_messages = {neighbour: None for neighbour in neighbours}
 
-    def compute_message(self, dest_name):
+    def compute_message(self, dest_name, use_default_val=False):
         """
-        Compute the message toward the destination node.
-        :param dest_name: the name of the destination node.
+        Compute the message toward the destination node
+        :param dest_name: the name of the destination node
+        :param use_default_val: whether to replace None values by ones
+        :return: the message to the destination node
         """
         raise Exception("Node::compute_message is not implemented")
 

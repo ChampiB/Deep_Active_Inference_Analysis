@@ -3,7 +3,6 @@ import os
 from agents.AgentFactory import AgentFactory
 from agents.memory.ReplayBuffer import ReplayBuffer, Experience
 from environments.EnvironmentFactory import EnvironmentFactory
-from environments.wrappers.DefaultWrappers import DefaultWrappers
 import numpy as np
 import random
 import argparse
@@ -42,7 +41,7 @@ def training_loop(agent, env, logging_file):
             agent.learn(logging_file, buffer, i)
 
         # Save the agent (if needed)
-        if i % 100 == 0:  # 00
+        if i % 1 == 0:  # TODO 0000
             agent.save(os.path.dirname(logging_file.name), i, env)
 
         # Monitor total rewards
@@ -80,7 +79,7 @@ def train(agent_filename, env_filename):
     env_file = open(env_filename, "r")
     env_json = json.load(env_file)
     env = EnvironmentFactory.create(env_json)
-    env = DefaultWrappers.apply(env, image_shape=(1, 64, 64))
+    # TODO env = DefaultWrappers.apply(env, image_shape=(1, 64, 64))
 
     # Create the agent
     agent_file = open(agent_filename, "r")

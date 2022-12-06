@@ -29,7 +29,7 @@ class ReconstructionDisplay(tk.Frame):
         self.jobs_json = {} if jobs_json is None else jobs_json
         self.images = []
         self.current_shift = 0
-        self.n_images_per_row = -1
+        self.n_images_per_row = 4
         self.empty = True
 
     def set_value(self, value):
@@ -98,6 +98,9 @@ class ReconstructionDisplay(tk.Frame):
                 image = Image.open(f"{directory}/obs-{i + self.current_shift}.png")
                 if self.n_images_per_row == -1:
                     self.n_images_per_row = int(self.winfo_width() / (image.width * ratio)) - 1
+                else:
+                    ratio = self.winfo_width() / (image.width * (self.n_images_per_row + 1))
+
                 image = self.pre_process(image, ratio)
                 label = LabelFactory.create(lf, image=image, theme="dark")
                 self.images.append(image)

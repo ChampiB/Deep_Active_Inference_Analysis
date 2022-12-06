@@ -22,7 +22,7 @@ class MiniSpritesEnvironment(gym.Env):
         # Gym compatibility
         super(MiniSpritesEnvironment, self).__init__()
         self.np_precision = np.float64
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(5)
         self.observation_space = spaces.Box(low=0, high=255, shape=(64, 64, 1), dtype=self.np_precision)
 
         # Initialize fields
@@ -37,10 +37,31 @@ class MiniSpritesEnvironment(gym.Env):
         self.x = random.randint(0, self.width)
         self.y = random.randint(0, self.height)
 
+        # Attributes used for the creation of A, B, C, and D matrices
+        self.state_names = ["S_x", "S_y", "S_color"]
+        self.s_sizes = [self.width, self.height, 2]
+
         # General task attributes
         self.last_r = 0.0
         self.frame_id = 0
         self.reset()
+
+    def render(self, mode="human"):
+        """
+        Renter the environment
+        :param mode: the mode of display to use
+        :return: the current frame
+        """
+        if mode != "rgb_array":
+            raise NotImplementedError()
+        return self.current_frame()
+
+    def get_state(self):
+        """
+        Getter
+        :return: a vector representing the environment state, [x position, y position, dot color]
+        """
+        return np.array([self.x, self.y, self.reward_on_the_right])
 
     def reset(self):
         """
@@ -65,16 +86,16 @@ class MiniSpritesEnvironment(gym.Env):
     def current_frame(self):
         """
         Return the current frame (i.e. the current observation)
-        :return: the current observationu
+        :return: the current observation
         """
         self.ensure_position_is_valid()
-        image = np.zeros([self.height, self.width, 3])
         self.x = int(self.x)
         self.y = int(self.y)
-        if self.reward_on_the_right:
-            image[self.y][self.x][0] = 255
-        else:
-            image[self.y][self.x][2] = 255
+        image = np.zeros([self.height, self.width, 3])
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.x == x and self.y == y:
+                    image[y][x][0 if self.reward_on_the_right else 1] = 255
         return image
 
     def step(self, action):
@@ -141,6 +162,10 @@ class MiniSpritesEnvironment(gym.Env):
         Execute the action "right" in the environment
         :return: false (the object never cross the bottom line when moving left)
         """
+        # Check if the shape can move
+        if self.y >= self.height:
+            return False
+
         # If x position is negative, reset it to zero
         if self.x < 0:
             self.x = 0
@@ -154,9 +179,15 @@ class MiniSpritesEnvironment(gym.Env):
         Execute the action "left" in the environment
         :return: false (the object never cross the bottom line when moving right)
         """
+        # Check if the shape can move
+        if self.y >= self.height:
+            return False
+
+        # If x position is too big, reset it to its maximum value
         if self.x > self.width - 1:
             self.x = self.width - 1
 
+        # Update x position
         self.x -= 1.0
         return False
 

@@ -1,8 +1,10 @@
 import math
 import queue
 import torch
+import numpy as np
 from torch.nn.functional import one_hot
 from agents.inference.Operators import Operators
+from agents.inference.enum.InferenceAlgorithms import InferenceAlgorithms as InfAlgo
 
 
 class TemporalSlice:
@@ -20,7 +22,7 @@ class TemporalSlice:
         :param fg: the factor graph of the temporal slice.
         :param n_actions: the number of actions.
         :param action_name: the name of the action random variable.
-        :param obs_prior_pref: the prior preferences over obersvations.
+        :param obs_prior_pref: the prior preferences over observations.
         :param obs_likelihood: the likelihood mapping of the observations.
         :param states_prior: the prior beliefs over hidden states.
         :param states_transition: the transition mappings of hidden states.
@@ -44,6 +46,10 @@ class TemporalSlice:
         self.visits = 1
         self.parent = None
         self.children = []
+        self.to_i_step = {
+            InfAlgo.BELIEF_PROPAGATION: self.i_step_bp,
+            InfAlgo.LOOPY_BELIEF_PROPAGATION: self.i_step_lbp
+        }
 
     def reset(self):
         """
@@ -73,7 +79,27 @@ class TemporalSlice:
         for state, params in self.states_posterior.items():
             self.fg[state].params = params
 
-    def i_step(self, obs):
+    def i_step(self, obs, inf_type=InfAlgo.LOOPY_BELIEF_PROPAGATION):
+        """
+        Perform the I-step, i.e., compute the posterior beliefs using the inference algorithm requested by the user.
+        :param obs: the observations made by the agent.
+        :param inf_type: the type of inference to use.
+        :return: nothing.
+        """
+        try:
+            self.to_i_step[inf_type](obs)
+        except RuntimeError:
+            self.fg.reset_messages()
+            if inf_type != InfAlgo.LOOPY_BELIEF_PROPAGATION:
+                print(
+                    "[ERROR] The requested inference algorithm failed to compute the posterior distributions. As a "
+                    "last resort, loopy belief propagation will be run."
+                )
+                self.to_i_step[InfAlgo.LOOPY_BELIEF_PROPAGATION](obs)
+            else:
+                print("[ERROR] The requested inference algorithm failed to compute the posterior distributions.")
+
+    def i_step_bp(self, obs):
         """
         Perform the I-step, i.e., compute the posterior beliefs using beliefs propagation.
         :param obs: the observations made by the agent.
@@ -97,10 +123,55 @@ class TemporalSlice:
                     q.put(t_node)
 
         # Compute the posterior over all latent states.
+        self.compute_posterior_distributions()
+
+    def i_step_lbp(self, obs):
+        """
+        Perform the I-step, i.e., compute the posterior beliefs using loopy beliefs propagation
+        :param obs: the observations made by the agent
+        :return: nothing.
+        """
+        # Set the evidence of each observation.
+        for name, evidence in obs.items():
+            self.fg.set_evidence(name, evidence)
+
+        # Perform the loopy belief propagation algorithm.
+        nodes = list(self.fg.factor_nodes()) + list(self.fg.variable_nodes())
+        max_error = 1
+        while max_error >= 1:
+            max_error = 0
+            for node in nodes:
+                for t_node in node.neighbours:
+                    msg = node.compute_message(t_node, use_default_val=True)
+                    t_node_msg = self.fg[t_node].in_messages[node.name]
+                    max_error = max(1 if t_node_msg is None else np.abs(t_node_msg - msg).max(), max_error)
+                    if isinstance(msg, np.ndarray):
+                        msg = torch.from_numpy(msg)
+                    if msg.isnan().any():
+                        exit(42)
+                    t_node = self.fg[t_node]
+                    t_node.in_messages[node.name] = msg
+
+        # Compute the posterior over all latent states.
+        self.compute_posterior_distributions()
+
+    def compute_posterior_distributions(self):
+        """
+        Compute the (marginal) posterior distributions from pre-computed messages
+        """
+        # Compute the posterior over all latent states.
         for node in self.fg.state_nodes():
             self.states_posterior[node.name] = torch.ones_like(self.states_posterior[node.name])
             for _, message in node.in_messages.items():
+                if message is None:
+                    raise RuntimeError(
+                        "Could not perform belief propagation: one of the message is None, which suggest that the "
+                        "generative model is not a poly-tree."
+                    )
                 self.states_posterior[node.name] *= message
+            normalisation = self.states_posterior[node.name].sum()
+            if normalisation == 0:
+                self.states_posterior[node.name] += 1
             self.states_posterior[node.name] /= self.states_posterior[node.name].sum()
 
     def get_target_nodes(self, node):
@@ -125,15 +196,15 @@ class TemporalSlice:
         """
         return self.fg[to_node].in_messages[from_node] is not None
 
-    def can_compute_message(self, from_node, to_node):
+    def can_compute_message(self, to_node, from_node):
         """
         Check if a message can be computed from one node to another.
         :param from_node: the node from which the message originates.
         :param to_node: the node that receives the message.
         :return: True if the message from "from_node" to "to_node" can be computed, False otherwise.
         """
-        for neighbour, message in self.fg[from_node].in_messages.items():
-            if neighbour != to_node and message is None:
+        for neighbour, message in self.fg[to_node].in_messages.items():
+            if neighbour != from_node and message is None:
                 return False
         return True
 
@@ -202,6 +273,7 @@ class TemporalSlice:
         Compute the expected free energy of the temporal slice.
         :return: the expected free energy.
         """
+        #print(sum(self.compute_risk_terms()), sum(self.compute_ambiguity_terms()))  # TODO
         return sum(self.compute_risk_terms()) + sum(self.compute_ambiguity_terms())
 
     def compute_risk_terms(self):
@@ -219,7 +291,7 @@ class TemporalSlice:
             if obs_name in processed_modalities:
                 continue
 
-            # Compute the posterior over the subset of observtions.
+            # Compute the posterior over the subset of observations.
             subset_posterior = None
             for rv_name in rv_names:
                 if subset_posterior is None:

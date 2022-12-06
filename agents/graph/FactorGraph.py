@@ -86,3 +86,17 @@ class FactorGraph:
         :return: the list of all nodes representing hidden states in the factor graph.
         """
         return filter(lambda node: node.name[0:2] == "S_", self.nodes.values())
+
+    def factor_nodes(self):
+        """
+        Getter.
+        :return: the list of all nodes of type FactorNode in the factor graph.
+        """
+        return filter(lambda node: isinstance(node, FactorNode), self.nodes.values())
+
+    def variable_nodes(self):
+        """
+        Getter.
+        :return: the list of all nodes of type VariableNode in the factor graph.
+        """
+        return filter(lambda node: isinstance(node, VariableNode), self.nodes.values())

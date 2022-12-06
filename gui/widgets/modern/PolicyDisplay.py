@@ -116,7 +116,8 @@ class PolicyDisplay(tk.Frame):
         """
         for key in self.labels.keys():
             if type(self.images[key]) != PIL.ImageTk.PhotoImage:
-                self.images[key] = self.pre_process(self.images[key], 2)
+                ratio = self.winfo_width() / (self.images[key].width * 5)
+                self.images[key] = self.pre_process(self.images[key], ratio)
             self.labels[key].config(image=self.images[key])
             self.update_idletasks()
 
@@ -129,9 +130,9 @@ class PolicyDisplay(tk.Frame):
         :param row_id: the index of the row in which to display the job
         """
         # Display policy of the agent
-        ratio = 2
         try:
             image = Image.open(f"{directory}/real-obs-{self.current_index}.png")
+            ratio = self.winfo_width() / (image.width * 5)
             image = self.pre_process(image, ratio)
             key = f"{agent}&{env}"
             if key not in self.labels.keys():
