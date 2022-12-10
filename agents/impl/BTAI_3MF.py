@@ -152,11 +152,6 @@ class BTAI_3MF(AgentInterface):
         obs = self.pre_process(obs)
         self.ts.i_step(obs)
         for i in range(0, self.max_planning_steps):
-            # print("=======================================")
-            # for child in self.ts.children:  # TODO
-            #     print("visits: ", child.visits)  # TODO
-            #     print("cost: ", child.cost)  # TODO
-            # print("=======================================")
             node = self.mcts.select_node(self.ts)
             e_nodes = self.mcts.expansion(node)
             self.mcts.evaluation(e_nodes)
