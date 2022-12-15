@@ -149,7 +149,7 @@ class CHMM(AgentInterface):
         obs, actions, rewards, done, next_obs = buffer.sample()
 
         # Compute the expected free energy loss.
-        efe_loss = self.compute_efe_loss(logging_file, obs, actions, next_obs, done, rewards)
+        efe_loss = self.compute_efe_loss(obs, actions, next_obs, done, rewards)
 
         # Perform one step of gradient descent on the critic network.
         self.efe_optimizer.zero_grad()
@@ -164,10 +164,9 @@ class CHMM(AgentInterface):
         vfe_loss.backward()
         self.vfe_optimizer.step()
 
-    def compute_efe_loss(self, config, obs, actions, next_obs, done, rewards):
+    def compute_efe_loss(self, obs, actions, next_obs, done, rewards):
         """
         Compute the expected free energy loss
-        :param config: the hydra configuration
         :param obs: the observations at time t
         :param actions: the actions at time t
         :param next_obs: the observations at time t + 1
@@ -193,7 +192,6 @@ class CHMM(AgentInterface):
 
         # Add information gain to the immediate g-value (if needed).
         immediate_g_value -= math_fc.compute_info_gain(self.g_value, mean_hat, log_var_hat, mean, log_var)
-
         immediate_g_value = immediate_g_value.to(torch.float32)
 
         # Compute the discounted G values.

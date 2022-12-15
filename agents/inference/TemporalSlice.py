@@ -1,6 +1,7 @@
 import math
 import queue
 import torch
+import random
 import numpy as np
 from torch.nn.functional import one_hot
 from agents.inference.Operators import Operators
@@ -268,17 +269,18 @@ class TemporalSlice:
             params = Operators.average(params, posterior, [i + 1])
         return params
 
-    def efe(self):
+    def efe(self, n_samples=1):
         """
         Compute the expected free energy of the temporal slice.
+        :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
         :return: the expected free energy.
         """
-        #print(sum(self.compute_risk_terms()), sum(self.compute_ambiguity_terms()))  # TODO
-        return sum(self.compute_risk_terms()) + sum(self.compute_ambiguity_terms())
+        return sum(self.compute_risk_terms(n_samples)) + sum(self.compute_ambiguity_terms(n_samples))
 
-    def compute_risk_terms(self):
+    def compute_risk_terms(self, n_samples=-1):
         """
         Compute all the risk terms of the expected free energy.
+        :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
         :return: the sum of all risk terms.
         """
         risk_terms = []
@@ -302,8 +304,17 @@ class TemporalSlice:
                     subset_posterior = subset_posterior.view(-1)
 
             # Compute the risk term of the expected free energy.
-            risk = subset_posterior * (subset_posterior.log() - prior_pref.log().view(-1))
-            risk = risk.sum()
+            if n_samples == -1:
+                # Using an analytical solution
+                risk = subset_posterior * (subset_posterior.log() - prior_pref.log().view(-1))
+                risk = risk.sum()
+            else:
+                # Using sampling
+                risk = []
+                for _ in range(n_samples):
+                    i = random.choices(range(len(subset_posterior)), subset_posterior)
+                    risk.append(subset_posterior.log()[i] - prior_pref.log()[i])
+                risk = sum(risk) / len(risk)
 
             # Save risk term.
             risk_terms.append(risk.item())
@@ -313,9 +324,10 @@ class TemporalSlice:
 
         return risk_terms
 
-    def compute_ambiguity_terms(self):
+    def compute_ambiguity_terms(self, n_samples=-1):
         """
         Compute the all the ambiguity terms of the expected free energy.
+        :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
         :return: the sum of all ambiguity terms.
         """
         ambiguity_terms = []
@@ -324,14 +336,33 @@ class TemporalSlice:
         for obs_name in self.obs_likelihood.keys():
             # Compute the ambiguity.
             ambiguity = - self.obs_likelihood[obs_name].log()
-            ambiguity = Operators.average(
-                ambiguity, self.obs_likelihood[obs_name],
-                [i for i in range(ambiguity.dim())],
-                [i for i in range(1, ambiguity.dim())]
-            )
-            for parent in reversed(self.obs_parents[obs_name]):
-                i = self.obs_parents[obs_name].index(parent)
-                ambiguity = Operators.average(ambiguity, self.states_posterior[parent], [i])
+            if n_samples == -1:
+                # Using an analytical solution
+                ambiguity = Operators.average(
+                    ambiguity, self.obs_likelihood[obs_name],
+                    [i for i in range(ambiguity.dim())],
+                    [i for i in range(1, ambiguity.dim())]
+                )
+                for parent in reversed(self.obs_parents[obs_name]):
+                    i = self.obs_parents[obs_name].index(parent)
+                    ambiguity = Operators.average(ambiguity, self.states_posterior[parent], [i])
+            else:
+                # Using sampling
+                ambiguities = []
+                for _ in range(n_samples):
+                    a = ambiguity
+                    log_a = self.obs_likelihood[obs_name]
+                    length = len(ambiguity.shape)
+                    for j, max_i in enumerate(reversed(ambiguity.shape)):
+                        j_tmp = length - j - 1
+                        i = random.choices(
+                            range(0, max_i),
+                            log_a if j_tmp == 0 else self.states_posterior[self.obs_parents[obs_name][j_tmp - 1]]
+                        )
+                        a = torch.index_select(a, j_tmp, torch.tensor(i))
+                        log_a = torch.index_select(log_a, j_tmp, torch.tensor(i))
+                    ambiguities.append(a)
+                ambiguity = sum(ambiguities) / len(ambiguities)
 
             # Save the ambiguity term.
             ambiguity_terms.append(ambiguity.item())

@@ -13,15 +13,19 @@ class DefaultWrappers:
     """
 
     @staticmethod
-    def apply(env, image_shape):
+    def apply(agent_class, env, image_shape):
         """
         Apply all the default wrapper to the environment
+        :param agent_class: the class of the agent
         :param env: the environment to wrap
         :param image_shape: the shape of the input image
         :return: the wrapped environment
         """
         # Only support discrete actions.
         assert isinstance(env.action_space, gym.spaces.Discrete)
+
+        if agent_class == "BTAI_3MF":
+            return env
 
         # Apply images wrapper if the environment produces images and non-images wrappers otherwise.
         if DefaultWrappers.env_returns_images(env):

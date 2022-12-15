@@ -22,11 +22,12 @@ class BTAI_3MF(AgentInterface):
         super().__init__("BTAI_3MF")
         self.max_planning_steps = int(agent_json["max_planning_steps"])
         self.exp_const = float(agent_json["exp_const"])
+        self.n_samples = int(agent_json["n_samples"])
         self.n_actions = n_actions
         self.agent_json = agent_json
         self.env = env
         self.ts = self.create_temporal_slide()
-        self.mcts = MCTS(self.exp_const)
+        self.mcts = MCTS(self.exp_const, n_samples=self.n_samples)
         self.last_action = None
 
     def a(self, noise=0.01):
@@ -152,11 +153,6 @@ class BTAI_3MF(AgentInterface):
         obs = self.pre_process(obs)
         self.ts.i_step(obs)
         for i in range(0, self.max_planning_steps):
-            # print("=======================================")
-            # for child in self.ts.children:  # TODO
-            #     print("visits: ", child.visits)  # TODO
-            #     print("cost: ", child.cost)  # TODO
-            # print("=======================================")
             node = self.mcts.select_node(self.ts)
             e_nodes = self.mcts.expansion(node)
             self.mcts.evaluation(e_nodes)
@@ -258,6 +254,10 @@ class BTAI_3MF(AgentInterface):
         :param buffer: the replay buffer
         :param steps_done: the number of training steps done
         """
+        # Display debug information, if needed.
+        # TODO if steps_done % 10 == 0:
+        # TODO     logging_file.write(str(vfe_loss.item()))
+        # TODO     logging_file.flush()
         pass  # This agent does not learn from data
 
     def is_model_based(self):
@@ -266,4 +266,3 @@ class BTAI_3MF(AgentInterface):
         :return: True if the agent is model based, False otherwise
         """
         return True
-

@@ -1,8 +1,8 @@
 {
-  "name": "BTAI_3MF",
+  "name": "BTAI_3MF_1_sample",
   "module": "agents.impl.BTAI_3MF",
   "class": "BTAI_3MF",
   "exp_const": "2.4",
-  "n_samples": "1",
-  "max_planning_steps": "150"
+  "max_planning_steps": "150",
+  "n_samples": "1"
 }

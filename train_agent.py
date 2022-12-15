@@ -6,6 +6,7 @@ from environments.EnvironmentFactory import EnvironmentFactory
 import numpy as np
 import random
 import argparse
+from environments.wrappers.DefaultWrappers import DefaultWrappers
 from gui.AnalysisConfig import AnalysisConfig
 import datetime
 import torch
@@ -41,7 +42,7 @@ def training_loop(agent, env, logging_file):
             agent.learn(logging_file, buffer, i)
 
         # Save the agent (if needed)
-        if i % 1 == 0:  # TODO 0000
+        if i % 10000 == 0:
             agent.save(os.path.dirname(logging_file.name), i, env)
 
         # Monitor total rewards
@@ -79,12 +80,14 @@ def train(agent_filename, env_filename):
     env_file = open(env_filename, "r")
     env_json = json.load(env_file)
     env = EnvironmentFactory.create(env_json)
-    # TODO env = DefaultWrappers.apply(env, image_shape=(1, 64, 64))
 
     # Create the agent
     agent_file = open(agent_filename, "r")
     agent_json = json.load(agent_file)
     agent = AgentFactory.create(agent_json, env.action_space.n, env)
+
+    # Apply required wrappers to the environment
+    env = DefaultWrappers.apply(agent_json["class"], env, image_shape=(1, 64, 64))
 
     # Create the logging file
     logging_dir = data_dir + f"logging/{env_json['name']}/{agent_json['name']}/"

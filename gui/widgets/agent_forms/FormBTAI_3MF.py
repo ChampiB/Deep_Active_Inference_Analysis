@@ -30,6 +30,7 @@ class FormBTAI_3MF(tk.Frame):
             self, theme="hyper_parameters", params={
                 "exp_const": "2.4" if agent is None else agent["exp_const"],
                 "max_planning_steps": "150" if agent is None else agent["max_planning_steps"],
+                "n_samples": "-1" if agent is None else agent["n_samples"],
             }
         )
         self.hyper_parameters.grid(row=2, column=0, pady=15, sticky="nsew")

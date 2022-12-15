@@ -76,7 +76,8 @@ class LabelFrameFactory:
             "Number of latent dimensions:": ("entry", "n_states", "int"),
             "Critic's objective:": ("combobox", "critic_objective", ["Reward", "Expected Free Energy"]),
             "Exploration constant": ("entry", "exp_const", "float"),
-            "Maximum number of planning iterations": ("entry", "max_planning_steps", "int")
+            "Maximum number of planning iterations": ("entry", "max_planning_steps", "int"),
+            "Number of samples for EFE estimation": ("entry", "n_samples", "int"),
         }
 
         # Create networks label frame
