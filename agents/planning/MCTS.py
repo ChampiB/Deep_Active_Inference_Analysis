@@ -12,8 +12,6 @@ class MCTS:
         self.exp_const = exp_const
         self.n_samples = n_samples
 
-        self.i = 0  # TODO remove
-
     def select_node(self, root):
         """
         Select the node to be expanded.
@@ -27,8 +25,8 @@ class MCTS:
     @staticmethod
     def expansion(node):
         """
-        Expand the node passed as parameters.
-        :param node: the node to be expanded.
+        Expand the node passed as parameters
+        :param node: the node to be expanded
         """
         nodes = []
         for action in range(0, node.n_actions):
@@ -37,22 +35,11 @@ class MCTS:
 
     def evaluation(self, nodes):
         """
-        Evaluate the input nodes.
-        :param nodes: the nodes to be evaluated.
+        Evaluate the input nodes
+        :param nodes: the nodes to be evaluated
         """
         for node in nodes:
             node.cost = node.efe(self.n_samples)
-            # TODO remove
-            if self.i == 0:
-                print("EFE_analytic, EFE_1_sample, EFE_10_sample, EFE_100_sample, EFE_1000_sample")
-                self.i += 1
-            cost_0 = node.efe(-1)
-            cost_1 = node.efe(1)
-            cost_10 = node.efe(10)
-            cost_100 = node.efe(100)
-            cost_1000 = node.efe(1000)
-            print(f"{cost_0},{cost_1},{cost_10},{cost_100},{cost_1000}")
-            # TODO remove
 
     def propagation(self, nodes):
         """
