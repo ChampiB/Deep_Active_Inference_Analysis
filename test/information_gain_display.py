@@ -50,7 +50,7 @@ def draw_grid(data):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     fig.colorbar(img, cax=cax)
-    plt.savefig("epistemic_value.png")
+    plt.savefig("figs/epistemic_value.png")
     plt.show()
 
 

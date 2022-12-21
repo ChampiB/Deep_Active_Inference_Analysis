@@ -111,7 +111,6 @@ def run(ts, max_number_of_points, verbose=True, training=False):
             node = mcts.select_node(ts)
             e_nodes = mcts.expansion(node)
             mcts.evaluation(e_nodes)
-            target_efe = torch.zeros(len(e_nodes))
             for node in e_nodes:
                 j += 1
                 state = torch.cat(
@@ -120,17 +119,18 @@ def run(ts, max_number_of_points, verbose=True, training=False):
                 )
                 critic_efe = critic(state)
                 if verbose:
-                    print(f"{node.efe(1)},{node.efe(10)},{node.efe(100)},{node.efe(1000)},{node.efe(-1)}, {critic_efe}")
+                    print(
+                        #  f"{node.efe(1)},{node.efe(10)},{node.efe(100)},{node.efe(1000)},{node.efe(-1)}," +
+                        f"{critic_efe.item()}"
+                    )
                 if training:
-                    target_efe[node.action] = node.efe(-1)
-                    loss = nn.SmoothL1Loss()(critic_efe, target_efe)
+                    efe_target = torch.tensor([node.efe(-1)])
+                    loss = nn.SmoothL1Loss()(critic_efe, efe_target)
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
-                if j % 10 == 0:
-                    print(j)
                 if j >= max_number_of_points:
-                    exit(0)
+                    return
             mcts.propagation(e_nodes)
         action = max(ts.children, key=lambda x: x.visits).action
         ts = next(filter(lambda x: x.action == action, ts.children))
@@ -145,17 +145,18 @@ if __name__ == '__main__':
     n_actions = env.action_space.n
     temporal_slide = create_temporal_slide(env, n_actions)
     mcts = MCTS(2.4, n_samples=150)
+    n_neurons = 100
     critic = nn.Sequential(
-        nn.Linear(int(width) + int(height) + 2, 256),
+        nn.Linear(int(width) + int(height) + 2, n_neurons),
         nn.ReLU(),
-        nn.Linear(256, 256),
+        nn.Linear(n_neurons, n_neurons),
         nn.ReLU(),
-        nn.Linear(256, 256),
+        nn.Linear(n_neurons, n_neurons),
         nn.ReLU(),
-        nn.Linear(256, n_actions),
+        nn.Linear(n_neurons, 1),
     )
-    optimizer = Optimizers.get_adam([critic], 0.001)
+    optimizer = Optimizers.get_adam([critic], 0.0001)
 
-    run(temporal_slide, max_number_of_points=1000, verbose=False, training=True)
+    run(temporal_slide, max_number_of_points=100, verbose=False, training=True)
     print("EFE_1_sample, EFE_10_samples, EFE_100_samples, EFE_1000_samples, EFE_analytic, EFE_critic")
     run(temporal_slide, max_number_of_points=100)
