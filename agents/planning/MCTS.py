@@ -3,7 +3,7 @@ class MCTS:
     Class implementing the Monte-Carlo tree search algorithm.
     """
 
-    def __init__(self, exp_const, n_samples):
+    def __init__(self, exp_const, n_samples=-1):
         """
         Construct the MCTS algorithm
         :param exp_const: the exploration constant of the MCTS algorithm

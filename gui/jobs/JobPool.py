@@ -34,7 +34,7 @@ class JobPool:
         if self.jobs.empty():
             return
         job, kwargs = self.jobs.get()
-        self.current_process = Process(target=job.run, args=kwargs.values())
+        self.current_process = Process(target=job.display_efe_prediction, args=kwargs.values())
         self.current_process.start()
         job.update("status", "running", save=False)
         job.update("start_time", datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))

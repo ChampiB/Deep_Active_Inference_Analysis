@@ -7,3 +7,4 @@ class InferenceAlgorithms(IntEnum):
     """
     BELIEF_PROPAGATION = 0
     LOOPY_BELIEF_PROPAGATION = 1
+    BACKPROPAGATION = 2

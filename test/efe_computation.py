@@ -1,4 +1,6 @@
 from torch import nn
+import copy
+from torch.distributions import Categorical
 from agents.inference.TemporalSliceBuilder import TemporalSliceBuilder
 from agents.learning import Optimizers
 from agents.planning.MCTS import MCTS
@@ -6,6 +8,9 @@ import torch
 from environments.impl.MiniSpritesEnvironment import MiniSpritesEnvironment
 
 
+#
+# BTAI_3MF agent definition
+#
 def a_matrix(env, noise=0.01):
     likelihoods = {}
     for x in range(env.width):
@@ -69,7 +74,7 @@ def d_matrix(env, uniform=False, noise=0.01):
     return prior_states
 
 
-def create_temporal_slide(env, n_actions):
+def create_temporal_slice(env, n_actions):
     env = env.unwrapped
     a = a_matrix(env)
     b = b_matrix(env, n_actions)
@@ -100,7 +105,55 @@ def pre_process(obs):
     return res
 
 
-def run(ts, max_number_of_points, verbose=True, training=False):
+#
+# The code collecting and displaying the data
+#
+def collect_dataset(ts, n_examples, sampling=False):
+    dataset = {"x": [], "y": []}
+    j = 0
+    obs = env.reset()
+    while True:
+        ts.reset()
+        obs = pre_process(obs)
+        ts.i_step(obs)
+        for i in range(0, 50):
+            node = mcts.select_node(ts)
+            e_nodes = mcts.expansion(node)
+            mcts.evaluation(e_nodes)
+            for node in e_nodes:
+                j += 1
+                states = [node.states_posterior[key] for key in ["S_x", "S_y", "S_color"]]
+                if sampling is True:
+                    for index, probs in enumerate(states):
+                        state = Categorical(probs=probs).sample()
+                        states[index] = torch.zeros(probs.shape[0])
+                        states[index][state] = 1
+                states = torch.cat(states, dim=0)
+                dataset["x"].append(states)
+                dataset["y"].append(torch.tensor(node.efe(-1)))
+                if j >= n_examples:
+                    return dataset
+            mcts.propagation(e_nodes)
+        action = max(ts.children, key=lambda x: x.visits).action
+        ts = next(filter(lambda x: x.action == action, ts.children))
+        ts.use_posteriors_as_empirical_priors()
+        obs, _, _, _ = env.step(action)
+
+
+def train(critic_net, dataset, n_epochs=1):
+    optimizer = Optimizers.get_adam([critic_net], 0.0001)
+    i = 0
+    while i != n_epochs:
+        for state, efe_target in zip(dataset["x"], dataset["y"]):
+            critic_efe = critic_net(state)
+            loss = nn.SmoothL1Loss()(critic_efe, efe_target)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        i += 1
+
+
+def display_efe_prediction(ts, n_points, critics):
     j = 0
     obs = env.reset()
     while True:
@@ -117,19 +170,11 @@ def run(ts, max_number_of_points, verbose=True, training=False):
                     [node.states_posterior["S_x"], node.states_posterior["S_y"], node.states_posterior["S_color"]],
                     dim=0
                 )
-                critic_efe = critic(state)
-                if verbose:
-                    print(
-                        #  f"{node.efe(1)},{node.efe(10)},{node.efe(100)},{node.efe(1000)},{node.efe(-1)}," +
-                        f"{critic_efe.item()}"
-                    )
-                if training:
-                    efe_target = torch.tensor([node.efe(-1)])
-                    loss = nn.SmoothL1Loss()(critic_efe, efe_target)
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                if j >= max_number_of_points:
+                s = f"{node.efe(-1)}"
+                for critic_net in critics:
+                    s += f",{critic_net(state)}"
+                print(s)
+                if j >= n_points:
                     return
             mcts.propagation(e_nodes)
         action = max(ts.children, key=lambda x: x.visits).action
@@ -138,15 +183,21 @@ def run(ts, max_number_of_points, verbose=True, training=False):
         obs, _, _, _ = env.step(action)
 
 
+#
+# Main script instantiating the environment and agent to collect the data
+#
 if __name__ == '__main__':
+    # Create the environment
     width = "5"
     height = "5"
     env = MiniSpritesEnvironment({"width": width, "height": height, "max_trial_length": "50"})
     n_actions = env.action_space.n
-    temporal_slide = create_temporal_slide(env, n_actions)
-    mcts = MCTS(2.4, n_samples=150)
+
+    # Create the agent related structures, i.e., temporal slice, mcts algorithm, critic and optimiser
+    temporal_slice = create_temporal_slice(env, n_actions)
+    mcts = MCTS(2.4)
     n_neurons = 100
-    critic = nn.Sequential(
+    initial_critic = nn.Sequential(
         nn.Linear(int(width) + int(height) + 2, n_neurons),
         nn.ReLU(),
         nn.Linear(n_neurons, n_neurons),
@@ -155,8 +206,23 @@ if __name__ == '__main__':
         nn.ReLU(),
         nn.Linear(n_neurons, 1),
     )
-    optimizer = Optimizers.get_adam([critic], 0.0001)
+    print("Initialisation: OK.")
 
-    run(temporal_slide, max_number_of_points=100, verbose=False, training=True)
-    print("EFE_1_sample, EFE_10_samples, EFE_100_samples, EFE_1000_samples, EFE_analytic, EFE_critic")
-    run(temporal_slide, max_number_of_points=100)
+    # Collect the dataset and train the critic network on it
+    ds = collect_dataset(temporal_slice, n_examples=1000, sampling=True)
+    print("Data collection: OK.")
+
+    critics = []
+    n_examples = 1
+    while n_examples != 10000:
+        print(f"Training {n_examples}_critic: IN PROGRESS...")
+        n_epochs = int(100000 / n_examples)
+        critic = copy.deepcopy(initial_critic)
+        train(critic, {"x": ds["x"][:n_examples], "y": ds["y"][:n_examples]}, n_epochs=n_epochs)
+        critics.append(critic)
+        n_examples *= 10
+    print("Training: OK.")
+
+    # Display expected free energy prediction
+    display_efe_prediction(temporal_slice, 100, critics)
+    print("Display: OK.")

@@ -1,3 +1,6 @@
+from torch import nn
+from PIL import Image
+from agents.math.functions import kl_div_categorical
 import math
 import queue
 import torch
@@ -6,6 +9,7 @@ import numpy as np
 from torch.nn.functional import one_hot
 from agents.inference.Operators import Operators
 from agents.inference.enum.InferenceAlgorithms import InferenceAlgorithms as InfAlgo
+from agents.learning import Optimizers
 
 
 class TemporalSlice:
@@ -47,9 +51,12 @@ class TemporalSlice:
         self.visits = 1
         self.parent = None
         self.children = []
+        self.encoder = None
+        self.optimizer = None if self.encoder is None else Optimizers.get_adam([self.encoder], 0.001)
         self.to_i_step = {
             InfAlgo.BELIEF_PROPAGATION: self.i_step_bp,
-            InfAlgo.LOOPY_BELIEF_PROPAGATION: self.i_step_lbp
+            InfAlgo.LOOPY_BELIEF_PROPAGATION: self.i_step_lbp,
+            InfAlgo.BACKPROPAGATION: self.i_step_backpropagation,
         }
 
     def reset(self):
@@ -82,10 +89,10 @@ class TemporalSlice:
 
     def i_step(self, obs, inf_type=InfAlgo.LOOPY_BELIEF_PROPAGATION):
         """
-        Perform the I-step, i.e., compute the posterior beliefs using the inference algorithm requested by the user.
-        :param obs: the observations made by the agent.
-        :param inf_type: the type of inference to use.
-        :return: nothing.
+        Perform the I-step, i.e., compute the posterior beliefs using the inference algorithm requested by the user
+        :param obs: the observations made by the agent
+        :param inf_type: the type of inference to use
+        :return: nothing
         """
         try:
             self.to_i_step[inf_type](obs)
@@ -102,9 +109,9 @@ class TemporalSlice:
 
     def i_step_bp(self, obs):
         """
-        Perform the I-step, i.e., compute the posterior beliefs using beliefs propagation.
-        :param obs: the observations made by the agent.
-        :return: nothing.
+        Perform the I-step, i.e., compute the posterior beliefs using beliefs propagation
+        :param obs: the observations made by the agent
+        :return: nothing
         """
         # Set the evidence of each observation.
         for name, evidence in obs.items():
@@ -155,6 +162,57 @@ class TemporalSlice:
 
         # Compute the posterior over all latent states.
         self.compute_posterior_distributions()
+
+    def i_step_backpropagation(self, obs, learn=True):
+        """
+        Perform the I-step, i.e., compute the posterior beliefs using an encoder network trained using backpropagation
+        :param obs: the observations made by the agent
+        :param learn: whether to learn the encoder weights
+        :return: nothing.
+        """
+        # Pre-process images
+        obs = Image.fromarray(obs.astype(np.uint8))
+        obs = obs.resize((20, 20), Image.ANTIALIAS)
+        obs = torch.from_numpy(np.array(obs)).unsqueeze(dim=0).permute(0, 3, 1, 2).type(torch.float32)
+
+        # Create encoder if it does not exist
+        if self.encoder is None:
+            n_outputs = sum([v.shape[0] for v in self.states_posterior.values()])
+            self.encoder = self.create_encoder(n_outputs)
+
+        # Compute the variational posteriors
+        shift = 0
+        posteriors = self.encoder(obs)
+        for k, posterior in self.states_posterior.items():
+            size = posterior.shape[0]
+            self.states_posterior[k] = posteriors[0, shift:shift + size]
+            shift += size
+
+        # Check whether learning must be performed
+        if not learn:
+            return
+
+        # Compute the complexity.
+        kl_div = sum([
+            kl_div_categorical(posterior, prior)
+            for prior, posterior in zip(self.states_prior.values(), self.states_posterior.values())
+        ])
+
+        # Compute the accuracy.
+        for obs_name in self.obs_posterior.keys():
+            self.obs_posterior[obs_name] = self.forward_prediction(
+                self.obs_likelihood[obs_name], 0,
+                self.obs_parents[obs_name], self.states_posterior
+            )
+        accuracy = None  # TODO get observation probability and sum them
+
+        # Compute the variational free energy
+        vfe = kl_div + accuracy
+
+        # Perform backpropagation
+        self.optimizer.zero_grad()
+        vfe.backward()
+        self.optimizer.step()
 
     def compute_posterior_distributions(self):
         """
@@ -368,3 +426,26 @@ class TemporalSlice:
             ambiguity_terms.append(ambiguity.item())
 
         return ambiguity_terms
+
+    @staticmethod
+    def create_encoder(n_outputs):
+        """
+        Create the encoder network
+        :param n_outputs: the number of output neurons
+        :return: the encoder network
+        """
+        return nn.Sequential(
+            nn.Conv2d(3, 32, (3, 3), stride=(2, 2), padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, (3, 3), stride=(2, 2), padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, (3, 3), stride=(2, 2), padding=1),
+            nn.ReLU(),
+            nn.Flatten(start_dim=1),
+            nn.Linear(576, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, n_outputs),
+            nn.Softmax(),
+        )

@@ -11,3 +11,4 @@ scp
 matplotlib
 torchvision
 pandas
+scikit-learn

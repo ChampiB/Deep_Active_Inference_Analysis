@@ -37,6 +37,25 @@ def kl_div_gaussian(mean_hat, log_var_hat, mean, log_var, sum_dims=None):
         return 0.5 * kl_div.sum(dim=sum_dims)
 
 
+def kl_div_categorical(q_probs=None, p_probs=None, q_weights=None, p_weights=None):
+    """
+    Compute the KL-divergence between two categorical distributions, i.e., KL[Q(x)||P(X)] = E_Q(x)[ln Q(x) - ln P(x)]
+    :param q_probs: the probabilities of the first categorical distribution
+    :param p_probs: the probabilities of the second categorical distribution
+    :param q_weights: the weights of the first categorical distribution
+    :param p_weights: the weights of the second categorical distribution
+    :return: the KL-divergence between the two categorical distributions
+    """
+    if q_probs is None and p_probs is None and q_weights is None and p_weights is None:
+        return 0
+    if q_probs is None and p_probs is None:
+        q_probs = q_weights / q_weights.sum()
+        p_probs = p_weights / p_weights.sum()
+    log_q_probs = q_probs.log()
+    log_p_probs = p_probs.log()
+    return (log_q_probs - log_p_probs).inner(q_probs)
+
+
 def compute_info_gain(g_value, mean_hat, log_var_hat, mean, log_var):
     """
     Compute the efe.

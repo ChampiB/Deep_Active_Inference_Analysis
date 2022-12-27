@@ -1,3 +1,4 @@
+from agents.inference.enum.InferenceAlgorithms import InferenceAlgorithms as InfAlgo
 import numpy
 from PIL import Image
 import os
@@ -29,6 +30,7 @@ class BTAI_3MF(AgentInterface):
         self.ts = self.create_temporal_slide()
         self.mcts = MCTS(self.exp_const, n_samples=self.n_samples)
         self.last_action = None
+        self.inference_type = InfAlgo.LOOPY_BELIEF_PROPAGATION  # TODO this could be added to the json
 
     def a(self, noise=0.01):
         """
@@ -151,7 +153,7 @@ class BTAI_3MF(AgentInterface):
         """
         self.ts.reset()
         obs = self.pre_process(obs)
-        self.ts.i_step(obs)
+        self.ts.i_step(obs, self.inference_type)
         for i in range(0, self.max_planning_steps):
             node = self.mcts.select_node(self.ts)
             e_nodes = self.mcts.expansion(node)
@@ -162,13 +164,17 @@ class BTAI_3MF(AgentInterface):
         self.ts.use_posteriors_as_empirical_priors()
         return action
 
-    @staticmethod
-    def pre_process(obs):
+    def pre_process(self, obs):
         """
         Pre-process observation to form a dictionary of variable name to evidence (one-hot) vector
         :param obs: observation
         :return: the dictionary
         """
+        # Do not pre-process the input data, if backpropagation will be used
+        if self.inference_type == InfAlgo.BACKPROPAGATION:
+            return obs
+
+        # Otherwise, pre-process the input data
         res = {}
         for y in range(obs.shape[0]):
             for x in range(obs.shape[1]):
@@ -229,7 +235,7 @@ class BTAI_3MF(AgentInterface):
         res = numpy.zeros_like(obs)
         self.ts.reset()
         obs = self.pre_process(obs)
-        self.ts.i_step(obs)
+        self.ts.i_step(obs, self.inference_type)
 
         # Predict observation from posterior distribution over latent states
         for obs_name in self.ts.obs_posterior.keys():
