@@ -1,3 +1,5 @@
+import copy
+
 from torch import nn
 from PIL import Image
 from agents.math.functions import kl_div_categorical
@@ -171,6 +173,7 @@ class TemporalSlice:
         :return: nothing.
         """
         # Pre-process images
+        init_obs = copy.deepcopy(obs)
         obs = Image.fromarray(obs.astype(np.uint8))
         obs = obs.resize((20, 20), Image.ANTIALIAS)
         obs = torch.from_numpy(np.array(obs)).unsqueeze(dim=0).permute(0, 3, 1, 2).type(torch.float32)
@@ -199,11 +202,16 @@ class TemporalSlice:
         ])
 
         # Compute the accuracy.
+        accuracies = {}
         for obs_name in self.obs_posterior.keys():
-            self.obs_posterior[obs_name] = self.forward_prediction(
-                self.obs_likelihood[obs_name], 0,
-                self.obs_parents[obs_name], self.states_posterior
+            accuracies[obs_name] = self.forward_prediction(
+                self.obs_likelihood[obs_name], 0, self.obs_parents[obs_name], self.states_posterior
             )
+        print(obs.shape)
+        print(init_obs.shape)
+        print(init_obs.max())
+        print(init_obs.min())
+        print()
         accuracy = None  # TODO get observation probability and sum them
 
         # Compute the variational free energy

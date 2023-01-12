@@ -30,7 +30,7 @@ class BTAI_3MF(AgentInterface):
         self.ts = self.create_temporal_slide()
         self.mcts = MCTS(self.exp_const, n_samples=self.n_samples)
         self.last_action = None
-        self.inference_type = InfAlgo.LOOPY_BELIEF_PROPAGATION  # TODO this could be added to the json
+        self.inference_type = InfAlgo.BACKPROPAGATION  # TODO this could be added to the json
 
     def a(self, noise=0.01):
         """
