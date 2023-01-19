@@ -108,7 +108,7 @@ def pre_process(obs):
 #
 # The code collecting and displaying the data
 #
-def collect_dataset(ts, n_examples, sampling=False):
+def collect_dataset(ts, n_examples, sampling=False, efe_cost=True):
     dataset = {"x": [], "y": []}
     j = 0
     obs = env.reset()
@@ -130,7 +130,10 @@ def collect_dataset(ts, n_examples, sampling=False):
                         states[index][state] = 1
                 states = torch.cat(states, dim=0)
                 dataset["x"].append(states)
-                dataset["y"].append(torch.tensor(node.efe(-1)))
+                if efe_cost is True:
+                    dataset["y"].append(torch.tensor(node.efe(-1)))
+                else:
+                    dataset["y"].append(torch.tensor(node.reward(-1)))
                 if j >= n_examples:
                     return dataset
             mcts.propagation(e_nodes)
@@ -153,7 +156,19 @@ def train(critic_net, dataset, n_epochs=1):
         i += 1
 
 
-def display_efe_prediction(ts, n_points, critics):
+def display_cost_prediction(ts, n_points, critic_networks, max_n_samples, efe_cost):
+    # Display the csv header
+    n = 0
+    while 10 ** n != max_n_samples:
+        n += 1
+    cost_type = "efe" if efe_cost is True else "reward"
+    print(
+        f"{cost_type}_analytic,"
+        f"{','.join([f'{cost_type}_critic_{10 ** i}' for i in range(n)])},"
+        f"{','.join([f'{cost_type}_sampling_{10 ** i}' for i in range(n)])}"
+    )
+
+    # Display the csv rows
     j = 0
     obs = env.reset()
     while True:
@@ -166,14 +181,29 @@ def display_efe_prediction(ts, n_points, critics):
             mcts.evaluation(e_nodes)
             for node in e_nodes:
                 j += 1
+                # Get current state as vector
                 state = torch.cat(
                     [node.states_posterior["S_x"], node.states_posterior["S_y"], node.states_posterior["S_color"]],
                     dim=0
                 )
-                s = f"{node.efe(-1)}"
-                for critic_net in critics:
-                    s += f",{critic_net(state)}"
+
+                # Compute cost analytically
+                s = f"{node.efe(-1)}" if efe_cost is True else f"{node.reward(-1)}"
+
+                # Compute cost using each critic
+                for critic_net in critic_networks:
+                    s += f",{critic_net(state).item()}"
+
+                # Compute cost using sampling
+                n_samples = 1
+                while n_samples != max_n_samples:
+                    s += f",{node.efe(n_samples)}" if efe_cost is True else f",{node.reward(max_n_samples)}"
+                    n_samples *= 10
+
+                # Display all costs
                 print(s)
+
+                # Check for terminal condition
                 if j >= n_points:
                     return
             mcts.propagation(e_nodes)
@@ -187,6 +217,9 @@ def display_efe_prediction(ts, n_points, critics):
 # Main script instantiating the environment and agent to collect the data
 #
 if __name__ == '__main__':
+    # Define the type of cost to use
+    efe_cost = False
+
     # Create the environment
     width = "5"
     height = "5"
@@ -209,12 +242,13 @@ if __name__ == '__main__':
     print("Initialisation: OK.")
 
     # Collect the dataset and train the critic network on it
-    ds = collect_dataset(temporal_slice, n_examples=1000, sampling=True)
+    ds = collect_dataset(temporal_slice, n_examples=1000, sampling=True, efe_cost=efe_cost)
     print("Data collection: OK.")
 
     critics = []
     n_examples = 1
-    while n_examples != 10000:
+    max_n_examples = 10000
+    while n_examples != max_n_examples:
         print(f"Training {n_examples}_critic: IN PROGRESS...")
         n_epochs = int(100000 / n_examples)
         critic = copy.deepcopy(initial_critic)
@@ -224,5 +258,5 @@ if __name__ == '__main__':
     print("Training: OK.")
 
     # Display expected free energy prediction
-    display_efe_prediction(temporal_slice, 100, critics)
+    display_cost_prediction(temporal_slice, 100, critics, max_n_examples, efe_cost)
     print("Display: OK.")

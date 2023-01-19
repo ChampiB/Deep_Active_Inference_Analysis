@@ -82,7 +82,7 @@ def display_epistemic_values(epistemic_values):
     plt.ylabel("Epistemic value")
     plt.xlabel("x")
 
-    # Save and display yhe figure
+    # Save and display the figure
     plt.show()
     print(epistemic_values)
 
@@ -94,8 +94,8 @@ if __name__ == '__main__':
     shift = 0.05
     As = torch.tensor([
         [
-            [0.5 + shift * x, 0.5 - shift * x],
-            [0.5 - shift * x, 0.5 + shift * x]
+            [0.5 + shift * x, 0.5],
+            [0.5 - shift * x, 0.5]
         ] for x in range(10)
     ])
     print("Initialisation: OK.")
@@ -103,7 +103,6 @@ if __name__ == '__main__':
     print("Posterior computation: In progress...")
     Ps = compute_posteriors(As, D)
     print("Posterior computation: Ok.")
-    display_debug(Ps, Q)
 
     print("Epistemic value computation: In progress...")
     EVs = compute_epistemic_values(Q, Ps, As)

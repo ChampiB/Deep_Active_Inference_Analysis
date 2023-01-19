@@ -322,12 +322,12 @@ class TemporalSlice:
     def forward_prediction(self, params, action, parents, posteriors):
         """
         Compute the forward prediction of the posterior over a random variable assuming
-        a particular mapping and action.
-        :param params: the parameters of the mapping.
-        :param action: the action taken.
-        :param parents: the parents of the random variable  named 'dest_name'.
-        :param posteriors: the posterior over the parents.
-        :return: the predictive posterior of the random variable named 'dest_name'.
+        a particular mapping and action
+        :param params: the parameters of the mapping
+        :param action: the action taken
+        :param parents: the parents of the random variable  named 'dest_name'
+        :param posteriors: the posterior over the parents
+        :return: the predictive posterior of the random variable named 'dest_name'
         """
         for parent in reversed(parents):
             posterior = action if parent == self.action_name else posteriors[parent]
@@ -337,17 +337,17 @@ class TemporalSlice:
 
     def efe(self, n_samples=1):
         """
-        Compute the expected free energy of the temporal slice.
+        Compute the expected free energy of the temporal slice
         :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
-        :return: the expected free energy.
+        :return: the expected free energy
         """
         return sum(self.compute_risk_terms(n_samples)) + sum(self.compute_ambiguity_terms(n_samples))
 
     def compute_risk_terms(self, n_samples=-1):
         """
-        Compute all the risk terms of the expected free energy.
+        Compute all the risk terms of the expected free energy
         :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
-        :return: the sum of all risk terms.
+        :return: all the risk terms
         """
         risk_terms = []
         processed_modalities = []
@@ -390,11 +390,58 @@ class TemporalSlice:
 
         return risk_terms
 
+    def reward(self, n_samples=-1):
+        """
+        Compute all the reward obtained by the agent
+        :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
+        :return: the sum of all rewards obtained by the agent
+        """
+        rewards = []
+        processed_modalities = []
+
+        # For each modality.
+        for obs_name, (rv_names, prior_pref) in self.obs_prior_pref.items():
+
+            # Check if the reward of this modality has already been computed.
+            if obs_name in processed_modalities:
+                continue
+
+            # Compute the posterior over the subset of observations.
+            subset_posterior = None
+            for rv_name in rv_names:
+                if subset_posterior is None:
+                    subset_posterior = self.obs_posterior[rv_name]
+                else:
+                    rv_posterior = self.obs_posterior[rv_name]
+                    subset_posterior = torch.outer(subset_posterior, rv_posterior)
+                    subset_posterior = subset_posterior.view(-1)
+
+            # Compute the reward of this modality.
+            if n_samples == -1:
+                # Using an analytical solution
+                reward = subset_posterior * (- prior_pref.log().view(-1))
+                reward = reward.sum()
+            else:
+                # Using sampling
+                reward = []
+                for _ in range(n_samples):
+                    i = random.choices(range(len(subset_posterior)), subset_posterior)
+                    reward.append(- prior_pref.log()[i])
+                reward = sum(reward) / len(reward)
+
+            # Save risk term.
+            rewards.append(reward.item())
+
+            # Add the random variable of the subset to the list of processed modalities.
+            processed_modalities += rv_names
+
+        return sum(rewards)
+
     def compute_ambiguity_terms(self, n_samples=-1):
         """
-        Compute the all the ambiguity terms of the expected free energy.
+        Compute the all the ambiguity terms of the expected free energy
         :param n_samples: the number of samples to use to compute the risk, -1 if an analytical solution must be used
-        :return: the sum of all ambiguity terms.
+        :return: the sum of all ambiguity terms
         """
         ambiguity_terms = []
 
